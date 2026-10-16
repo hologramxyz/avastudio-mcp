@@ -1,0 +1,16 @@
+{
+  "name": "avastudio",
+  "owner": {
+    "name": "Hologram Labs"
+  },
+  "plugins": [
+    {
+      "name": "avastudio",
+      "source": "./",
+      "description": "Ava Studio hosted MCP tools and workflow guidance."
+    }
+  ],
+  "metadata": {
+    "description": "Ava Studio hosted MCP tools and workflow guidance."
+  }
+}
