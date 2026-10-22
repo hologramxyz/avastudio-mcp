@@ -32,6 +32,17 @@ assemble the completed clips with `timeline_add`; set `include_audio:true`
 on video items when keeping their generated speech. Export the project for one
 downloadable video. Reuse successful clips during retries and repairs.
 
+For each editable project, use its exact returned `studio_url` from
+`project_get` when offering an Open or Edit link. Do not substitute the Studio
+homepage or invent a project URL. Deliver the completed export's
+`result.output_url` as the download link, distinct from the editing link.
+
+A standalone `video_generate` result is a clip in Library → Media, not an
+editable timeline project. To edit or caption that clip, create a project and
+use `timeline_add` to import the existing video with `include_audio:true`.
+Do not regenerate it just to create a project. Campaign projects stay under
+their campaign; standalone editable projects appear in Library → Projects.
+
 ## Choose the right workflow
 
 - Research references with `research_breakouts`, `research_search`, or another
