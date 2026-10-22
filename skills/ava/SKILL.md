@@ -1,6 +1,6 @@
 ---
 name: ava
-description: Use Ava Studio to research short-form video, manage brand media and campaigns, draft concepts, generate media, and edit or export projects through its hosted MCP tools.
+description: Use Ava Studio to research references, clone videos or photo carousels, manage campaigns and brand media, continue saved project conversations, generate media, and edit or export projects through its hosted MCP tools.
 ---
 
 # Ava Studio workflows
@@ -14,6 +14,8 @@ permission; never ask the user to paste credentials into chat.
 
 - Research references with `research_breakouts`, `research_search`, or another
   relevant research tool. Include the returned source URLs with findings.
+  Use `research_search` with `media_type:"carousel"` for photo references;
+  `video` and `all` are also supported. Photo posts have `/photo/` URLs.
 - `draft_briefs` and `draft_clone` write briefs; they do not produce media.
   `draft_get`, `draft_spec`, and `draft_prompts` read the resulting work.
 - Campaigns use `campaign_create`, `plan_run`, `concept_list`, approval, and
@@ -37,6 +39,17 @@ only when the user wants production; otherwise save a plan. When
 `needs_input` is true, relay the actual question and send the user's answer
 in the same project. Never invent a casting or creative choice.
 
+On reconnect, use `project_history { project_id }` to read saved messages and
+reference attachments. Results are newest first; pass `next_cursor` as `cursor`
+for older pages, including pages with no visible messages but a cursor.
+Only `outcome:"awaiting_input"` requests a user answer; relay its `question`.
+An unrepaired tool failure is `blocked`, not a question. A failed job may retain
+its `result`: inspect it and the saved project before continuing. Deliver useful
+partial work with its `advisories`, preserving successful media during repairs.
+Use API tool names and project ids instead of Studio controls such as
+"Generate All above". Inspect the saved state before claiming generation or
+caption placement succeeded; caption ingredients alone are not timeline text.
+
 Browser clients can use accessible links; they may not be able to upload local
 bytes. Clients with file access can use `library_upload_url`, PUT the bytes
 with the returned headers, then `library_add`. Brand media uses the matching
@@ -54,6 +67,13 @@ descriptions and model catalog give prices. `project_ask`'s
 `media_credit_limit` is a caller-selected media estimate allowance; its token
 reservation grows against available balance and budget. Do not promise a
 fixed total cost from an initial reservation.
+The initial API working hold for `project_ask` is 50 credits and replenishes
+within the balance and key budget; it is not a total-turn spending cap. Actual
+AI and media usage remains billable on unsuccessful turns; unused holds return.
+
+For `export_render`, `watermark:"auto"` follows the project owner's entitlement,
+`required` includes a watermark, and `none` requires a paid owner. Unchanged
+exports reuse a matching artifact only with the same watermark mode.
 
 Long-running tools return a `job_id`: poll `jobs_get` until succeeded or failed
 and report actual API and media charges. Reuse the same `idempotency_key` when

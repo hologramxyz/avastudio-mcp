@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "avastudio",
-  "version": "0.6.0",
+  "version": "0.7.1",
   "description": "Research, draft, produce and edit creative projects with Ava Studio.",
   "author": {
     "name": "Hologram Labs",
@@ -86,10 +86,11 @@
           ]
         },
         "commerce": false,
-        "commerce_description": "Existing Ava Studio accounts access their entitled features and use existing credits. This integration does not sell subscriptions or credits or initiate checkout."
+        "commerce_description": "Existing Ava Studio accounts access their entitled features and use existing credits. This integration does not sell subscriptions or credits or initiate checkout.",
+        "demo_recording_url": "https://youtu.be/iek-gxm19Ko"
       },
       "publication": {
-        "release_notes": "Initial directory package for Ava Studio's hosted OAuth MCP server, workflow skill and 75 tools."
+        "release_notes": "Initial directory package for Ava Studio's hosted OAuth MCP server and 76 tools, with workflow guidance for conversation history, explicit turn outcomes, caption verification, photo references and watermark-aware exports. Includes the submission demo recording."
       }
     }
   }
