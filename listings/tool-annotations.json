@@ -82,7 +82,7 @@
   {
     "name": "brand_media_upload_url",
     "title": "Create brand media upload link",
-    "description": "Get a presigned link to upload one local image (JPEG, PNG or WebP, up to 10 MB) or video (MP4, MOV or WebM, up to 50 MB) for a brand: PUT the file bytes to upload_url with exactly the returned headers before expires_at (15 minutes). Then pass media_url to brand_media_add to add and analyze it; public links need no upload, pass them to brand_media_add directly. Videos that are not H.264 (such as HEVC/H.265 from an iPhone) are converted to H.264 MP4 when added.",
+    "description": "For clients that can PUT bytes, get a presigned link to upload one local image (JPEG, PNG or WebP, up to 10 MB) or video (MP4, MOV or WebM, up to 50 MB) for a brand: PUT the file bytes to upload_url with exactly the returned headers before expires_at (15 minutes). Then pass media_url to brand_media_add to add and analyze it; public links need no upload, pass them to brand_media_add directly. Videos that are not H.264 (such as HEVC/H.265 from an iPhone) are converted to H.264 MP4 when added.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
@@ -132,7 +132,7 @@
   {
     "name": "research_trends",
     "title": "Research video trends",
-    "description": "What is trending right now in short-form video (hashtags, sounds, formats, hook clusters) with velocity and example videos, for a niche or a brand; follow with research_formats, research_hooks or draft_briefs. Costs 1 credit per call. Every example comes with its TikTok link; always show those links to the user next to each insight.",
+    "description": "Research patterns in Ava's collected short-form corpus by niche or brand; window counts track collection, not publication or platform growth. Costs 1 credit per call. Explain findings with linked examples, dated public metrics and sample limits; keep internal scores out of the pitch and label older posts as historical references.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -142,7 +142,7 @@
   {
     "name": "research_formats",
     "title": "Research video formats",
-    "description": "Rank video formats (talking head, green screen, before/after, ...) by recent performance for a niche or brand, with exemplar video ids; pass the pick to draft_briefs.format. Costs 1 credit per call. Every example comes with its TikTok link; always show those links to the user next to each insight.",
+    "description": "Rank video formats within Ava's collected corpus for a niche or brand; scores are internal ordering heuristics without a calibrated success threshold. Costs 1 credit per call. Explain the pick with linked examples, recorded public counters, publication and measurement dates, sample limits and relevance to the brand; pass it to draft_briefs.format.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -152,7 +152,7 @@
   {
     "name": "research_hooks",
     "title": "Research opening hooks",
-    "description": "Top opening hooks from winning videos in a niche or brand category, grouped by pattern, with example videos; use them to seed or sanity-check hooks before draft_briefs. Costs 1 credit per call. Every example comes with its TikTok link; always show those links to the user next to each insight.",
+    "description": "Find opening hooks from sampled videos, grouped by pattern with source links. Costs 1 credit per call. Cite examples and their available public metrics and dates; label Ava's hook scores as analysis estimates and use the hooks to seed draft_briefs.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -162,7 +162,7 @@
   {
     "name": "research_search",
     "title": "Search public video references",
-    "description": "Search the scored UGC video corpus by keyword and filters (format, min views, min breakout, region, recency) for videos with platform URLs and scores; pass good video_ids to draft_briefs.research_video_ids or research_similar. Costs 1 credit per call. Every example comes with its TikTok link; always show those links to the user next to each insight.",
+    "description": "Search the UGC corpus by keyword, format, public views, derived breakout ratio, region or recency. Costs 1 credit per call. Cite returned platform URLs and dated public counters, explain sampled creator baselines and evidence limits, and pass suitable video_ids to draft_briefs or research_similar.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -172,7 +172,7 @@
   {
     "name": "research_similar",
     "title": "Find similar video references",
-    "description": "Find videos similar to a corpus video (video_id) or to free text, by hook or by visual style (requires video_id or text), to widen a set of references before draft_briefs. Costs 2 credits per call. Every example comes with its TikTok link; always show those links to the user next to each insight.",
+    "description": "Find videos with similar hooks or visual style using a video_id or text. Costs 2 credits per call. Similarity is relevance, not performance; cite platform links and dated public counters, describe brand fit and state missing evidence instead of treating internal scores as proof of success.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -182,7 +182,7 @@
   {
     "name": "research_breakouts",
     "title": "Find breakout videos",
-    "description": "Videos that recently broke out far above their creator's normal views, for a niche or brand category: the best starting references for draft_briefs.research_video_ids. Costs 1 credit per call. Every example comes with its TikTok link; always show those links to the user next to each insight.",
+    "description": "Find sampled videos above Ava's sampled creator view baseline for a niche or brand. Costs 1 credit per call. Explain the derived breakout denominator and cite linked posts with dated public counters and publication dates; engagement does not establish conversions and small samples need caveats.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -272,7 +272,7 @@
   {
     "name": "draft_spec",
     "title": "Read brief shot list",
-    "description": "Turn a brief into a shot list: per-shot role, duration, action, framing, camera, performer, speech, on-screen text and audio. Use when producing the video yourself; follow with draft_prompts.",
+    "description": "Turn a brief into a shot list: per-shot role, duration, action, framing, camera, performer, speech, on-screen text and audio. Follow with draft_prompts for model-specific prompts, then video_generate or image_generate after the user approves the estimate.",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
@@ -282,7 +282,7 @@
   {
     "name": "draft_prompts",
     "title": "Read brief generation prompts",
-    "description": "Write per-shot generation prompts for a specific video or image model (seedance-2, veo-3.1, kling-3, sora-2, runway-gen4, nano-banana, gpt-image, generic). Carousel and static briefs get one image prompt per slide and need an image target (nano-banana, gpt-image or generic). Ava does not generate the video or images; run the prompts in your tool of choice.",
+    "description": "Write per-shot generation prompts for a specific video or image model (seedance-2, veo-3.1, kling-3, sora-2, runway-gen4, nano-banana, gpt-image, generic). Carousel and static briefs get one image prompt per slide and need an image target (nano-banana, gpt-image or generic). This tool only writes prompts; to fulfill a generation request, quote generation_estimate then call video_generate or image_generate after approval and poll jobs_get for the media.",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
@@ -452,7 +452,7 @@
   {
     "name": "export_render",
     "title": "Export project media",
-    "description": "Render a Studio project to a downloadable file without a watermark: an MP4 for a video project, or images for an image project. Costs 10 credits. Free when the project is unchanged since its last export, the render production made included; returns a job_id, poll jobs_get for output_url.",
+    "description": "Render a Studio project to a downloadable MP4 or image file; watermark:auto (default) follows the owner's plan, watermark:required includes it, and watermark:none requires a paid owner. Costs 10 credits. Free when the project is unchanged since its last export with the same watermark setting; poll jobs_get for output_url.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -473,6 +473,16 @@
     "name": "project_get",
     "title": "Read project timeline",
     "description": "Read a Studio project: scenes in timeline order (type, timing, status, caption, selected media and latest generation), every timeline element with its id, the captions and other on-screen text with their position and style, the script lines and the latest export; prompts stay hidden. Read it before project_edit, timeline_add or timeline_remove; call export_render for a fresh file.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "project_history",
+    "title": "Read project conversation history",
+    "description": "Read a project's saved user and assistant conversation, including reference attachments, when reconnecting or continuing work from another client. Newest messages first with next_cursor for older pages, excluding internal prompts and tool traces.",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
@@ -532,7 +542,7 @@
   {
     "name": "video_generate",
     "title": "Generate video",
-    "description": "Generate one video with any Studio video model from a prompt, a start (and end) frame, reference images or videos, a motion reference, a video to extend or edit, or several shots; it is saved to the user's Studio library, and with save_to_brand_id to that brand's media. Costs Studio's price for the model and settings (the same media credits as in Ava Studio): quote it with generation_estimate first. Returns a job_id (minutes); poll jobs_get for the video.",
+    "description": "Generate a video from a prompt and optional reference media, saved to the user's Studio library and optionally save_to_brand_id; Costs Studio's price for the model and settings (the same media credits as in Ava Studio): quote it with generation_estimate first. After the user approves the estimate, call this tool to start generation; prompts alone do not generate. Returns a job_id (minutes); poll jobs_get and share the video URL.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -712,7 +722,7 @@
   {
     "name": "library_add",
     "title": "Import library media",
-    "description": "Import 1-10 public https images, videos or audio files, or library_upload_url's media_url, into the user's Studio library. Links are copied into Ava's storage (images up to 10 MB, videos 50 MB, audio 9.2 MB) so the asset outlives its source, uploads stay where they are, and video that is not H.264, such as an iPhone's HEVC, is converted to an H.264 MP4 copy. Returns a job_id; poll jobs_get for each library_asset_id, and failed for links not imported.",
+    "description": "Import 1-10 media files: ChatGPT attachments in files (Ava downloads them; no PUT), or public URLs/completed uploads in items. Links are copied into Ava's storage, uploads stay where they are, and other video codecs are converted to an H.264 MP4 copy. Poll jobs_get for library_asset_id and failed; use {library_asset_id} in video_generate, image_generate or project_ask.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
@@ -722,7 +732,7 @@
   {
     "name": "library_upload_url",
     "title": "Create library upload link",
-    "description": "Get a presigned link to upload one local image (JPEG, PNG or WebP, up to 50 MB), video (MP4 or MOV, up to 500 MB) or audio file (MP3, WAV or M4A, up to 9.2 MB): PUT the bytes to upload_url with exactly the returned headers before expires_at (15 minutes). Then pass media_url to library_add to keep it in the Studio library, or to a media input as {url}.",
+    "description": "For clients that can PUT bytes, get a presigned link to upload one local image (JPEG, PNG or WebP, up to 50 MB), video (MP4 or MOV, up to 500 MB) or audio file (MP3, WAV or M4A, up to 9.2 MB): PUT the bytes to upload_url with exactly the returned headers before expires_at (15 minutes). Then pass media_url to library_add or a media input as {url}; an unused upload_url contains no file. For ChatGPT attachments use library_add files instead.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
@@ -742,7 +752,7 @@
   {
     "name": "jobs_get",
     "title": "Read job status",
-    "description": "Check a job from any tool that returns a job_id; its kind is the tool's name. Poll every few seconds until status is succeeded or failed: result holds the tool's output, credits_charged the API credits it cost and media_credits_charged the media credits its generation spent (while running: credits_held and media_credits_estimate).",
+    "description": "Check a job from any tool that returns a job_id; its kind is the tool's name. Poll every few seconds until status is succeeded or failed: result holds the tool's output (failed project_ask jobs can also retain partial results), credits_charged the API credits it cost and media_credits_charged the media credits its generation spent (while running: credits_held and media_credits_estimate).",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,

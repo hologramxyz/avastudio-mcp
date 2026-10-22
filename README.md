@@ -28,7 +28,12 @@ private specification package, reviewer credentials or publisher keys.
 - `server.json`: official MCP Registry entry for `com.avastudio/ava`.
 - `plugin.json`, `mcp.json`, `skills/`, `assets/`: portable OpenAI plugin.
 - `.claude-plugin/` and `.mcp.json`: Claude Code plugin compatibility.
-- `listings/`: Claude/Smithery form copy and all 75 tool annotations.
+- `listings/`: Claude/Smithery form copy and all 76 tool annotations.
+
+The tool titles, descriptions and safety labels are a submission snapshot of
+the production catalog at revision `94897358606fa4cadc25dd87deabcdcf3ded70fd`
+(2026-10-22). Refresh this snapshot from the hosted service before a directory
+submission if its tool catalog has changed.
 
 Validate and build the OpenAI upload ZIP with Node.js 22+ and `zip`:
 

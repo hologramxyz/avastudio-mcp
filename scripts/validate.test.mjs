@@ -36,10 +36,11 @@ test('submission includes usable public URLs, icons, and exactly five positive a
   assert(extension.publication.release_notes.length > 0);
 });
 
-test('75 distinct tools have explicit safety labels and read-only tools cannot be destructive', () => {
+test('76 distinct tools have explicit safety labels and read-only tools cannot be destructive', () => {
   const tools = json('listings/tool-annotations.json');
-  assert.equal(tools.length, 75);
-  assert.equal(new Set(tools.map(t => t.name)).size, 75);
+  assert.equal(tools.length, 76);
+  assert.equal(new Set(tools.map(t => t.name)).size, 76);
+  assert(tools.some(tool => tool.name === 'project_history'));
   for (const tool of tools) {
     assert(tool.title.length > 3);
     for (const key of ['readOnlyHint', 'destructiveHint', 'openWorldHint']) assert.equal(typeof tool.annotations[key], 'boolean');
