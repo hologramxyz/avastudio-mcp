@@ -1,5 +1,5 @@
 {
-  "name": "Ava Studio for Agents",
+  "name": "Ava Studio",
   "url": "https://mcp.avastudio.com/mcp",
   "authentication": "OAuth 2.1; DCR and client ID metadata documents",
   "documentation": "https://docs.avastudio.com/api-and-mcp",

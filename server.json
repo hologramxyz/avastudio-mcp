@@ -1,9 +1,9 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.avastudio/ava",
-  "title": "Ava Studio for Agents",
+  "title": "Ava Studio",
   "description": "Research video, manage campaigns, generate media, and edit or export Ava Studio projects.",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "websiteUrl": "https://docs.avastudio.com/api-and-mcp",
   "remotes": [
     {

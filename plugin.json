@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "avastudio",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Research, draft, produce and edit creative projects with Ava Studio.",
   "author": {
     "name": "Hologram Labs",
@@ -12,7 +12,7 @@
   "extensions": {
     "com.openai": {
       "interface": {
-        "displayName": "Ava Studio for Agents",
+        "displayName": "Ava Studio",
         "shortDescription": "Create with Ava Studio",
         "longDescription": "Research short-form video references, manage brand media, draft campaign concepts, generate images, video and audio, and edit or export projects in Ava Studio. Sign in with Ava to choose permissions and a monthly credit budget. Actions use existing account credits and return usage information.",
         "developerName": "Hologram Labs",
@@ -90,7 +90,7 @@
         "demo_recording_url": "https://youtu.be/iek-gxm19Ko"
       },
       "publication": {
-        "release_notes": "Initial directory package for Ava Studio's hosted OAuth MCP server and 76 tools, with workflow guidance for conversation history, explicit turn outcomes, caption verification, photo references and watermark-aware exports. Includes the submission demo recording."
+        "release_notes": "Update the plugin's display name to Ava Studio and use the current app.avastudio.com icon for the directory listing and composer."
       }
     }
   }

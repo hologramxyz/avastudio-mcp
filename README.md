@@ -1,4 +1,4 @@
-# Ava Studio for Agents
+# Ava Studio
 
 Public connection, plugin and MCP directory listing files for Ava Studio.
 The hosted service runs at https://mcp.avastudio.com/mcp.
@@ -40,3 +40,7 @@ npm run package
 Upload `dist/avastudio-plugin.zip` through OpenAI's **With MCP** submission
 flow. Never include keys, login credentials or private account data in a ZIP.
 The service terms and privacy policy are linked from the manifest.
+
+The listing and composer use the app's original 512×512 PNG icon from
+https://app.avastudio.com/icon.png. The package's stable identifier remains
+`avastudio`; its public display name is **Ava Studio**.
