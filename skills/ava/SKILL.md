@@ -10,6 +10,28 @@ the credit balance, and the connection's monthly budget. The available tool
 list reflects granted scopes. If a tool is missing, explain the needed
 permission; never ask the user to paste credentials into chat.
 
+## Deliver generated media
+
+For a generation request, use `models_list` and `generation_estimate` to quote
+the settings and cost. After the user approves, start the matching generation
+tool or `project_ask { generate:true }`. Reuse approval for the agreed request
+and budget; confirm changes that fall outside that authorization. Briefs and prompts
+alone do not fulfill a request for a generated video.
+
+Poll `jobs_get` until succeeded or failed. Share the generated file URL from
+the successful result, such as `result.video.url` for `video_generate`.
+For a project, inspect `project_get`, call `export_render`, and poll its job
+for `result.output_url`. A Studio editor link is optional; the user should
+not need to open Studio to press Generate or export the finished work.
+If the turn ends while a job is still running, report its actual status and
+keep its job and project ids so a follow-up checks the same work. Do not
+promise background monitoring when the client cannot provide it.
+
+When the approved video needs multiple clips, generate each clip once and
+assemble the completed clips with `timeline_add`; set `include_audio:true`
+on video items when keeping their generated speech. Export the project for one
+downloadable video. Reuse successful clips during retries and repairs.
+
 ## Choose the right workflow
 
 - Research references with `research_breakouts`, `research_search`, or another
@@ -50,15 +72,35 @@ Use API tool names and project ids instead of Studio controls such as
 "Generate All above". Inspect the saved state before claiming generation or
 caption placement succeeded; caption ingredients alone are not timeline text.
 
-Browser clients can use accessible links; they may not be able to upload local
-bytes. Clients with file access can use `library_upload_url`, PUT the bytes
-with the returned headers, then `library_add`. Brand media uses the matching
-`brand_media_upload_url` and `brand_media_add` tools. Check `brand_get`'s
-`media_readiness` before production and ask for relevant product footage when
-needed. Treat source captions, subjects, format and pacing as explicit
-requirements, then inspect the saved project and exported artifact before
-claiming they were preserved. Report missing overlays or a mismatched export
-format without regenerating successful media unnecessarily.
+Treat source captions, subjects, format and pacing as explicit requirements,
+then inspect the saved project and exported artifact before claiming they
+were preserved. Report missing overlays or a mismatched export format without
+regenerating successful media unnecessarily.
+
+## Import attachments
+
+For ChatGPT attachments, call `library_add` with `files`, using the file objects
+ChatGPT supplies: `download_url`, `file_id`, and optional `mime_type` and
+`file_name`. Ava downloads and saves the files directly. Do not invent file ids
+or download URLs, and do not replace this handoff with `library_upload_url`.
+
+Poll the import job, check both `result.assets` and `result.failed`, then use
+the returned `library_asset_id` in the actual generation inputs. For example,
+an image reference can be `video_generate.reference_images` containing
+`{library_asset_id}`, or a `project_ask` attachment with
+`{type:"image",source:{library_asset_id}}`.
+If ChatGPT does not supply the attachment or its download has expired, ask
+for a fresh attachment or accessible HTTPS link. Do not silently substitute a
+text description for the requested photo and spend on that altered request;
+obtain approval for such a fallback.
+
+Public HTTPS links use `library_add.items`. Clients that can send file bytes
+may use `library_upload_url`, PUT the bytes with the returned headers, then
+import the completed `media_url`. Creating an upload URL does not upload a file.
+To add an imported asset to a brand, pass its saved URL to `brand_media_add`;
+clients that can PUT bytes may also use `brand_media_upload_url` first.
+Check `brand_get`'s `media_readiness` and use relevant existing brand footage
+or request it when needed for production.
 
 ## Spending, jobs and confirmation
 
@@ -75,11 +117,10 @@ For `export_render`, `watermark:"auto"` follows the project owner's entitlement,
 `required` includes a watermark, and `none` requires a paid owner. Unchanged
 exports reuse a matching artifact only with the same watermark mode.
 
-Long-running tools return a `job_id`: poll `jobs_get` until succeeded or failed
-and report actual API and media charges. Reuse the same `idempotency_key` when
-retrying the same paid or write operation. After a timeout, inspect the job
-and project before starting another operation. Never claim work succeeded
-based only on acceptance of a job.
+Report actual API and media charges from completed jobs. Reuse the same
+`idempotency_key` when retrying the same paid or write operation. After a
+timeout, inspect the existing job and project before starting another operation.
+Never claim work succeeded based only on acceptance of a job.
 
 Get explicit confirmation for a particular brand before `brand_delete` with
 `confirm:true`. Tool annotations describe side effects, not permission to

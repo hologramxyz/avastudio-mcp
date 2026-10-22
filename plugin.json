@@ -90,7 +90,7 @@
         "demo_recording_url": "https://youtu.be/iek-gxm19Ko"
       },
       "publication": {
-        "release_notes": "Update the plugin's display name to Ava Studio and use the current app.avastudio.com icon for the directory listing and composer."
+        "release_notes": "Update the display name to Ava Studio and use the current app.avastudio.com icon. Update workflow guidance for native ChatGPT attachment imports, approved generation, job polling, downloadable media delivery and reuse of completed clips."
       }
     }
   }
