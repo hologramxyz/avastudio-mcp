@@ -1,0 +1,10 @@
+{
+  "name": "avastudio-mcp-listing",
+  "version": "0.7.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test scripts/validate.test.mjs",
+    "package": "node scripts/package.mjs"
+  }
+}

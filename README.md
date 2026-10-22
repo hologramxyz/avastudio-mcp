@@ -1,6 +1,51 @@
-# Ava Studio for Agents
+# Ava Studio
 
 Public connection, plugin and MCP directory listing files for Ava Studio.
 The hosted service runs at https://mcp.avastudio.com/mcp.
 
 Documentation: https://docs.avastudio.com/api-and-mcp/connect
+
+Connect Claude, ChatGPT or Cursor with the server URL and **Sign in with Ava**.
+Choose permissions and an optional monthly credit budget during consent.
+Only the permitted tools are visible. Existing account credits pay for work;
+each paid result or completed job reports its charge.
+
+For Claude Code, install the workflow plugin:
+
+```text
+/plugin marketplace add hologramxyz/avastudio-mcp
+/plugin install avastudio@avastudio
+```
+
+The public [CLI](https://docs.avastudio.com/api-and-mcp/cli) and
+[TypeScript SDK](https://docs.avastudio.com/api-and-mcp/sdk) offer the same
+tools over REST. This repository contains only client guidance, artwork and
+listing files; it does not contain the hosted backend, SDK implementation,
+private specification package, reviewer credentials or publisher keys.
+
+## Listing files
+
+- `server.json`: official MCP Registry entry for `com.avastudio/ava`.
+- `plugin.json`, `mcp.json`, `skills/`, `assets/`: portable OpenAI plugin.
+- `.claude-plugin/` and `.mcp.json`: Claude Code plugin compatibility.
+- `listings/`: Claude/Smithery form copy and all 76 tool annotations.
+
+The tool titles, descriptions and safety labels are a submission snapshot of
+the production catalog at revision `94897358606fa4cadc25dd87deabcdcf3ded70fd`
+(2026-10-22). Refresh this snapshot from the hosted service before a directory
+submission if its tool catalog has changed.
+
+Validate and build the OpenAI upload ZIP with Node.js 22+ and `zip`:
+
+```bash
+npm test
+npm run package
+```
+
+Upload `dist/avastudio-plugin.zip` through OpenAI's **With MCP** submission
+flow. Never include keys, login credentials or private account data in a ZIP.
+The service terms and privacy policy are linked from the manifest.
+
+The listing and composer use the app's original 512×512 PNG icon from
+https://app.avastudio.com/icon.png. The package's stable identifier remains
+`avastudio`; its public display name is **Ava Studio**.

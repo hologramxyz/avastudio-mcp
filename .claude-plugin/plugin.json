@@ -1,0 +1,11 @@
+{
+  "name": "avastudio",
+  "version": "0.7.2",
+  "description": "Research, draft, produce and edit creative projects with Ava Studio.",
+  "author": {
+    "name": "Hologram Labs",
+    "url": "https://avastudio.com"
+  },
+  "homepage": "https://docs.avastudio.com/api-and-mcp",
+  "repository": "https://github.com/hologramxyz/avastudio-mcp"
+}

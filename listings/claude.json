@@ -1,0 +1,9 @@
+{
+  "name": "Ava Studio",
+  "url": "https://mcp.avastudio.com/mcp",
+  "authentication": "OAuth 2.1; DCR and client ID metadata documents",
+  "documentation": "https://docs.avastudio.com/api-and-mcp",
+  "privacyPolicy": "https://app.avastudio.com/privacy-policy",
+  "support": "https://docs.avastudio.com/account-and-support/contact-support",
+  "description": "Research short-form video references, manage brand media, draft campaign concepts, generate images, video and audio, and edit or export projects in Ava Studio. Sign in with Ava to choose permissions and a monthly credit budget. Actions use existing account credits and return usage information."
+}

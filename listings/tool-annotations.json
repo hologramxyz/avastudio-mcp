@@ -1,0 +1,762 @@
+[
+  {
+    "name": "whoami",
+    "title": "View Ava account",
+    "description": "Check the API key and see the account: user id, credit balance and brands. Call this first in a session; if brands is empty, call brand_create next.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "brand_list",
+    "title": "List brands",
+    "description": "List the account's brands (id, name, url, primary flag). Use it to pick a brand_id for research and drafting; call brand_get for full details.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "brand_create",
+    "title": "Create brand from website",
+    "description": "Research a brand from its website, save a full brand profile (products, audience, tone, claims, customer insights) and analyze up to 12 of the images and videos it found so productions can use them. Costs 40 credits. Takes a minute or two: returns a job_id; poll jobs_get until succeeded, then the result is the Brand, whose media_readiness says what media is still missing.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "brand_get",
+    "title": "Read brand profile",
+    "description": "Read a brand profile; pass sections to fetch only part of it (identity, audience, products, sources, visual, market). Use before drafting to check claims and audience (fix gaps with brand_update), and before producing to check the visual section's media_readiness: below good, videos get no B-roll and AI-generated product shots, so ask the user for real media (brand_media_upload_url, brand_media_add) or make clips with broll_create.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "brand_update",
+    "title": "Update brand profile",
+    "description": "Edit a brand profile and get the updated Brand back. patch holds only the fields to change (arrays replace the whole list). Use claim_status / insight_status to approve or exclude existing claims and insights.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "brand_export",
+    "title": "Export brand profile",
+    "description": "Export a brand profile as a portable brand.md (format md) or raw JSON (format json). Use it to save brand context into a repo or hand it to another tool.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "brand_set_primary",
+    "title": "Set primary brand",
+    "description": "Make a brand the account's primary brand, the one Ava Studio opens by default and whoami marks is_primary. Returns primary_brand_id and the previous primary brand.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "brand_delete",
+    "title": "Delete brand",
+    "description": "Permanently delete a brand profile, as Studio's Delete brand does (its campaigns and projects stay); ask the user first and pass confirm true, since it cannot be undone. If it was the primary brand another brand becomes primary; returns deleted_brand_id and primary_brand_id (null when no brand is left).",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "brand_media_upload_url",
+    "title": "Create brand media upload link",
+    "description": "For clients that can PUT bytes, get a presigned link to upload one local image (JPEG, PNG or WebP, up to 10 MB) or video (MP4, MOV or WebM, up to 50 MB) for a brand: PUT the file bytes to upload_url with exactly the returned headers before expires_at (15 minutes). Then pass media_url to brand_media_add to add and analyze it; public links need no upload, pass them to brand_media_add directly. Videos that are not H.264 (such as HEVC/H.265 from an iPhone) are converted to H.264 MP4 when added.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "brand_media_add",
+    "title": "Import brand media",
+    "description": "Add 1-10 images or videos to a brand (https links, brand_media_upload_url's media_url or brand_get urls; 30 max) and analyze each so Ava can use it; non-H.264 video, such as an iPhone's HEVC, is converted to an H.264 MP4 copy. Costs 2 credits per item imported and analyzed: failed lists items not added, analyzed false with analysis_error marks items added but not analyzed (add again to retry), neither charged. Returns a job_id; jobs_get then has the items and media_readiness.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "brand_media_update",
+    "title": "Update brand media details",
+    "description": "Change one brand media item's label or description (when and how Ava should use it); a description set here wins over the machine analysis. Pass media_id from brand_get and label, description or both; returns the updated item and the brand's media_readiness.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "brand_media_remove",
+    "title": "Remove brand media",
+    "description": "Remove 1-30 items from a brand's media by media_id (from brand_get), so Ava stops using them; the stored files are kept. Returns the ids removed, those not found and the brand's media_readiness.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "broll_create",
+    "title": "Generate brand B-roll",
+    "description": "Make one 5-second vertical B-roll clip from 1-4 of the brand's images (product photos, app screens or web pages, by media_id) with a Studio B-roll template; the clip joins the brand's media, analyzed. Costs the media credits Studio charges for it, about 75 (a key with a monthly limit needs room for them). Returns a job_id (a few minutes); poll jobs_get, the result is the new media_item and its project_id, and media_credits_charged what the media cost.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "research_trends",
+    "title": "Research video trends",
+    "description": "Research patterns in Ava's collected short-form corpus by niche or brand; window counts track collection, not publication or platform growth. Costs 1 credit per call. Explain findings with linked examples, dated public metrics and sample limits; keep internal scores out of the pitch and label older posts as historical references.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "research_formats",
+    "title": "Research video formats",
+    "description": "Rank video formats within Ava's collected corpus for a niche or brand; scores are internal ordering heuristics without a calibrated success threshold. Costs 1 credit per call. Explain the pick with linked examples, recorded public counters, publication and measurement dates, sample limits and relevance to the brand; pass it to draft_briefs.format.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "research_hooks",
+    "title": "Research opening hooks",
+    "description": "Find opening hooks from sampled videos, grouped by pattern with source links. Costs 1 credit per call. Cite examples and their available public metrics and dates; label Ava's hook scores as analysis estimates and use the hooks to seed draft_briefs.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "research_search",
+    "title": "Search public video references",
+    "description": "Search the UGC corpus by keyword, format, public views, derived breakout ratio, region or recency. Costs 1 credit per call. Cite returned platform URLs and dated public counters, explain sampled creator baselines and evidence limits, and pass suitable video_ids to draft_briefs or research_similar.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "research_similar",
+    "title": "Find similar video references",
+    "description": "Find videos with similar hooks or visual style using a video_id or text. Costs 2 credits per call. Similarity is relevance, not performance; cite platform links and dated public counters, describe brand fit and state missing evidence instead of treating internal scores as proof of success.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "research_breakouts",
+    "title": "Find breakout videos",
+    "description": "Find sampled videos above Ava's sampled creator view baseline for a niche or brand. Costs 1 credit per call. Explain the derived breakout denominator and cite linked posts with dated public counters and publication dates; engagement does not establish conversions and small samples need caveats.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "research_my_ads",
+    "title": "Read connected ad performance",
+    "description": "The user's own Meta ad results (spend, CTR, hook rate, hold, cost, 0-100 score) with account medians and a short why_it_works / why_it_didnt per ad. Call meta_status first; if not connected, follow next_steps to meta_connect. Cite ads by name, and pass winning ad_ids to draft_briefs.my_ad_ids.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "meta_status",
+    "title": "Check Meta connection",
+    "description": "Check whether a brand's Meta ad account is connected, which account, when it last synced and how many ads it has. Call before research_my_ads; if connected is false or needs_reconnect is true, call meta_connect.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "meta_connect",
+    "title": "Get Meta connection link",
+    "description": "Get the Ava Studio link where the user connects the brand's Meta ad account (Meta sign-in happens in their browser, not through the API). Show the connect_url and instructions to the user, then call meta_status once they are done.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "meta_sync",
+    "title": "Sync connected Meta ads",
+    "description": "Pull the latest ads and results from the brand's connected Meta account (the same sync Ava Studio runs). Costs 10 credits, so run it only when last_synced_at is old; recent syncs are refused with a retry time. Returns a job_id; poll jobs_get, the result is the status after the sync.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "draft_briefs",
+    "title": "Draft creative briefs",
+    "description": "Draft briefs for a brand grounded in market videos and, when Meta is connected, its own best ads: short-form video by default, or with output a carousel or static image ad; concepts only, no media. Costs 10 credits per brief plus the AI usage, typically \u2248 25 credits per brief in total. Returns a job_id; poll jobs_get, then use draft_spec, draft_prompts, draft_check or draft_open on the brief ids, saved in the brand's \"From your agent\" campaign in Ava Studio.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "draft_get",
+    "title": "Read creative brief",
+    "description": "Read one brief in full (script, storyboard, rationale, status). Use after draft_list or to re-check a brief after draft_iterate.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "draft_list",
+    "title": "List creative briefs",
+    "description": "List recent briefs, newest first, optionally for one brand or campaign. Use draft_get for full details.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "draft_iterate",
+    "title": "Revise creative brief",
+    "description": "Revise a brief from plain-language feedback (a punchier hook, less salesy, a different CTA); only revises briefs created through the API. Costs 8 credits plus the AI usage, typically \u2248 15 credits in total. Returns a job_id; poll jobs_get, the result is the revised Brief.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "draft_spec",
+    "title": "Read brief shot list",
+    "description": "Turn a brief into a shot list: per-shot role, duration, action, framing, camera, performer, speech, on-screen text and audio. Follow with draft_prompts for model-specific prompts, then video_generate or image_generate after the user approves the estimate.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "draft_prompts",
+    "title": "Read brief generation prompts",
+    "description": "Write per-shot generation prompts for a specific video or image model (seedance-2, veo-3.1, kling-3, sora-2, runway-gen4, nano-banana, gpt-image, generic). Carousel and static briefs get one image prompt per slide and need an image target (nano-banana, gpt-image or generic). This tool only writes prompts; to fulfill a generation request, quote generation_estimate then call video_generate or image_generate after approval and poll jobs_get for the media.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "draft_check",
+    "title": "Evaluate creative brief",
+    "description": "Score a brief 0-100 against winning videos in its niche, with strengths, risks and the most similar winners; the score is an AI judgment, not a calibrated prediction of performance. Costs 3 credits plus the AI usage, typically \u2248 4 credits in total. Use it to compare briefs before committing; revise weak ones with draft_iterate.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "draft_open",
+    "title": "Get brief review link",
+    "description": "Get the Ava Studio link where the brief can be reviewed, approved and produced. Share it with the user when they want to see or approve a draft.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "draft_clone",
+    "title": "Draft brief from reference video",
+    "description": "Clone one short-form video (TikTok, Instagram Reel or YouTube Short URL) into ONE on-brand brief that keeps its format, beats, pacing, hook mechanic and caption style. Sources up to 2 minutes. Costs 10 credits plus the AI usage, typically \u2248 25 credits in total; returns a job_id: poll jobs_get, then use draft_spec, draft_prompts or draft_open on the brief, saved in the brand's \"From your agent\" campaign in Ava Studio.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "campaign_list",
+    "title": "List campaigns",
+    "description": "List the account's Ava Studio campaigns, newest first, optionally for one brand: name, type, automation and whether setup is complete. Use campaign_get for a campaign's settings and latest plan run, or campaign_create to start one.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "campaign_get",
+    "title": "Read campaign",
+    "description": "Read one campaign: brief, objective, type, automation settings, featured brand media and a summary of its latest plan run. Call plan_run to research and draft concepts, or concept_list to see the ones already drafted.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "campaign_create",
+    "title": "Create campaign",
+    "description": "Create a campaign for a brand, organic posts or paid Meta ads, with Studio's default settings for that type; automation starts off, so Ava plans only when you call plan_run. Returns the Campaign; next call plan_run, or share studio_url to fine-tune formats and cast in Studio.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "campaign_update",
+    "title": "Update campaign settings",
+    "description": "Change a campaign's name, brief, objective or featured brand media, pause automation, or save its schedule and time zone while paused; send only changed fields to get the updated Campaign. Enabling or rescheduling active automation is refused because scheduled work runs outside API prices and key budgets; use plan_run for each run. Manage automation, formats, cast and media budgets in Studio.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "plan_run",
+    "title": "Run campaign planner",
+    "description": "Run Ava's planner on a campaign for the current period: research what is working for the brand and draft concepts for review, always in draft mode, so it never produces media. Costs 200 credits, only when it starts a run; if this period's run already finished or is in progress, the job returns that run with started false and nothing is charged. Takes several minutes: returns a job_id; poll jobs_get, then review the concepts with concept_list.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "plan_get",
+    "title": "Read campaign plan",
+    "description": "Read a campaign's plan run (the latest unless period_start is given): status, step labels, concept counts and ids, and Ava's research summary and strategy. Use it to follow a run started in Studio or by the schedule; when status is ready, call concept_list.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "concept_list",
+    "title": "List campaign concepts",
+    "description": "List a campaign's concepts (the creative ideas Ava drafted), newest first, optionally for one plan run or status: hook, status, output kind and creative_id once approved. A concept_id is also a brief id, so draft_get shows its full script; then approve with concept_approve or reject with concept_reject.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "concept_approve",
+    "title": "Approve concepts for production",
+    "description": "Approve 1-20 draft concepts into the campaign's production queue; if one fails, none are approved, and approving starts no production. Concepts that need an actor picked first come back in needs_cast with a Studio link while the rest are approved; produce approved ones with creative_produce.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "concept_reject",
+    "title": "Reject concept",
+    "description": "Reject a draft concept, with an optional reason Ava uses as feedback when she drafts later concepts. Only concepts with status draft can be rejected (anything else is invalid_input); returns the updated concept.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "concepts_draft_more",
+    "title": "Draft more campaign concepts",
+    "description": "Draft 1-5 more concepts into the campaign's current plan run, reusing its research; call plan_run first if this period has no run yet. Costs 10 credits per concept drafted; it never produces media, so on a campaign whose mode is produce it fails with invalid_input. Returns a job_id; poll jobs_get, the result lists the new concepts.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "creative_produce",
+    "title": "Produce campaign creative",
+    "description": "Produce one concept into finished media (video, carousel or static image) like Studio's Generate button, which picks an actor if none is set. Costs 50 credits plus the media credits Studio charges (about its credit_range; a key's monthly limit needs room for both); no fee when already produced or producing (started false) or production fails. Takes minutes: returns a job_id; poll jobs_get for the Creative, or a failed job whose error names the reason and the creative for creative_get.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "creative_get",
+    "title": "Read creative",
+    "description": "Read one creative (an approved or produced concept): production status, output URLs, the post package (caption, hashtags, publish status) and its Studio project. To change it, edit the project with project_edit and get a new file with export_render.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "creative_list",
+    "title": "List campaign creatives",
+    "description": "List a campaign's creatives (approved and produced concepts), newest first, optionally for one plan run: status, output URLs and project ids. Call creative_get for one creative's post package, or creative_produce on approved concepts not produced yet.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "export_render",
+    "title": "Export project media",
+    "description": "Render a Studio project to a downloadable MP4 or image file; watermark:auto (default) follows the owner's plan, watermark:required includes it, and watermark:none requires a paid owner. Costs 10 credits. Free when the project is unchanged since its last export with the same watermark setting; poll jobs_get for output_url.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "project_list",
+    "title": "List projects",
+    "description": "List the account's Studio projects (editable videos and image sets), newest first, optionally for one campaign. Call project_get for a project's scenes and captions.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "project_get",
+    "title": "Read project timeline",
+    "description": "Read a Studio project: scenes in timeline order (type, timing, status, caption, selected media and latest generation), every timeline element with its id, the captions and other on-screen text with their position and style, the script lines and the latest export; prompts stay hidden. Read it before project_edit, timeline_add or timeline_remove; call export_render for a fresh file.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "project_history",
+    "title": "Read project conversation history",
+    "description": "Read a project's saved user and assistant conversation, including reference attachments, when reconnecting or continuing work from another client. Newest messages first with next_cursor for older pages, excluding internal prompts and tool traces.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "project_ask",
+    "title": "Plan or clone in a project",
+    "description": "Run Studio's project planner to clone videos or TikTok photo carousels and plan with attached media; start with project_create. Set generate:true to produce, or relay needs_input questions and send the user's answer in the same project. Costs 10 credits plus AI tokens and Studio media; AI reservations grow within the balance/key budget without a fixed turn cap; media_credit_limit bounds estimated media spend (default 300); poll jobs_get.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "project_edit",
+    "title": "Edit project timeline",
+    "description": "Apply one plain-language edit to a produced project's timeline: retime or trim scenes and b-roll, cut dead air, move captions onto their beat or off a face or the product, resize or move picture-in-picture and split-screen media. It cannot change words, add, remove or regenerate scenes, or touch music and voice. Costs 10 credits plus the AI usage; returns a job_id, poll jobs_get, then call export_render for the edited file.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "models_list",
+    "title": "List generation models and prices",
+    "description": "List the image, video and audio models Studio offers, optionally of one kind: modes, aspect ratios, durations, resolutions, qualities, reference limits and Studio's credit prices (the API charges the same). Pick a model here before image_generate, video_generate, audio_generate or scene_generate, then quote the cost with generation_estimate.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "generation_estimate",
+    "title": "Estimate media generation cost",
+    "description": "Quote 1-20 generations at Studio's media credits for the model and settings (what the API charges too), plus the total; video bills on the clip's measured length, which can run a frame long (4 s may bill as 4.04 s). Work priced after the fact is quoted at its most: image_layerize at 17 layers of a large image (up to 1536\u00d71536 pixels costs half), video_remove_background at the duration given (else 60 s). Tell the user the total first; a key with a monthly limit needs room for it.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "image_generate",
+    "title": "Generate images",
+    "description": "Generate 1-4 images with any Studio image model from a prompt, optionally editing or steering with reference images; they are saved to the user's Studio library, and with save_to_brand_id to that brand's media. Costs Studio's price for the model and settings (the same media credits as in Ava Studio): quote it with generation_estimate first. Returns a job_id; poll jobs_get for the images' urls and library_asset_ids.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "video_generate",
+    "title": "Generate video",
+    "description": "Generate a video from a prompt and optional reference media, saved to the user's Studio library and optionally save_to_brand_id; Costs Studio's price for the model and settings (the same media credits as in Ava Studio): quote it with generation_estimate first. After the user approves the estimate, call this tool to start generation; prompts alone do not generate. Returns a job_id (minutes); poll jobs_get and share the video URL.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "audio_generate",
+    "title": "Generate audio",
+    "description": "Generate a voiceover from a script in a voice from voices_list, music from a prompt, or a sound effect from a prompt (or matched to a video with mmaudio); it is saved to the user's Studio library, ready for timeline_add. Costs Studio's price for the model and settings (the same media credits as in Ava Studio): quote it with generation_estimate first. Returns a job_id; poll jobs_get for the audio.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "voices_list",
+    "title": "Find voiceover voices",
+    "description": "List the voices Studio offers for voiceovers (name, gender, accent, description and a preview link); with query, also search ElevenLabs' community voices. Pass a voice_id to audio_generate.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "video_upscale",
+    "title": "Upscale video",
+    "description": "Upscale a video (a link, brand media or a library asset) with FlashVSR; the result is saved to the user's Studio library. Costs Studio's price for the model and settings (the same media credits as in Ava Studio): quote it with generation_estimate. Returns a job_id; poll jobs_get for the video.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "video_remove_background",
+    "title": "Remove video background",
+    "description": "Cut the subject out of a video (a link, brand media or a library asset) onto a transparent background; the result is saved to the user's Studio library. Costs Studio's price for the model and settings (the same media credits as in Ava Studio), per second of video: quote it with generation_estimate. Returns a job_id; poll jobs_get for the video and its alpha mask.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "image_reframe",
+    "title": "Reframe image",
+    "description": "Reframe an image to another aspect ratio, extending the scene past its edges; the result is saved to the user's Studio library. Costs Studio's price for the model and settings (the same media credits as in Ava Studio): quote it with generation_estimate. Returns a job_id; poll jobs_get for the image.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "image_layerize",
+    "title": "Separate image layers",
+    "description": "Split an image into editable transparent layers (subject, text, background); the layers are saved to the user's Studio library. Costs Studio's price for the model and settings (the same media credits as in Ava Studio), per layer made (2-17): generation_estimate quotes all 17 at the large-image price, the most it can cost (a key with a monthly limit needs room for that); an image up to 1536\u00d71536 pixels costs half. Returns a job_id; poll jobs_get for the layers.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "project_create",
+    "title": "Create empty project",
+    "description": "Create an empty Studio project (a timeline) with a title and aspect ratio, optionally for a brand or campaign; returns the Project. Fill it with scene_generate, timeline_add and captions_generate, then export_render.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "template_list",
+    "title": "List project templates",
+    "description": "List Studio's video templates, optionally for one use case or matching words in the title: title, use case, aspect ratio and preview. Read one with template_get for its variables and price, then make a project with project_from_template.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "template_get",
+    "title": "Read project template",
+    "description": "Read one Studio template: the variables to fill (text or media, required or with a default), each scene's variables and whether changing them generates it again, what stays fixed (music, voiceover, an actor without a variable), its preview and the quote for making a project from it (Studio's media credits). Pass the variables to project_from_template.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "project_from_template",
+    "title": "Create project from template",
+    "description": "Make a project from a Studio template with your variables: only what depends on them changes (a scene generated from a variable you change is generated again, media variables swap in your file, text variables fill in); the rest stays as in the template (template_get: each scene's depends_on, and what is fixed). Costs Studio's price for the template: its 10-credit base fee plus each scene it generates at its model's price; template_get quotes it. Returns a job_id; poll jobs_get.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "scene_generate",
+    "title": "Generate scene variants",
+    "description": "Generate 1-4 variants of one scene of a project with any image or video model, into a scene from project_get or a new one after the last. Costs Studio's price for the model and settings (the same media credits as in Ava Studio), per variant: quote it with generation_estimate (count = variant_count). Returns a job_id; jobs_get gives the variants and, for a scene without media, where the first ready one went (placement); swap in another with scene_select_variant.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "scene_select_variant",
+    "title": "Select scene variant",
+    "description": "Put one of a scene's generated variants on the timeline, as picking it in Studio does; returns the scene with its media. The generation and variant ids come from scene_generate's result.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "timeline_add",
+    "title": "Add timeline elements",
+    "description": "Add 1-20 items to a project's timeline in one change: video, image or audio from a link, brand media or the library, or text, each at a start time with an optional duration, track, position and style. Returns the new elements with their ids; check the result with project_get and render it with export_render.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "timeline_update",
+    "title": "Update timeline elements",
+    "description": "Change 1-20 elements of a project's timeline in one change: move, retime or trim them, set volume or mute, reposition a video, image or text, restyle text, or move a clip between the main and overlay tracks. A video's own sound moves and trims with it. Returns the changed elements with their style; element ids come from project_get or timeline_add.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "timeline_remove",
+    "title": "Remove timeline elements",
+    "description": "Remove 1-50 elements from a project's timeline by element_id (from project_get or timeline_add) in one change; ids not on it come back in not_found.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "captions_generate",
+    "title": "Generate timed captions",
+    "description": "Add timed captions to a project from its voiceover, or from the audio element given, as Studio's auto captions do. Costs Studio's price for caption timing: 2 credits per started minute of audio, at least 2 (a 2-minute voiceover costs 4). Returns a job_id; poll jobs_get for the captions and media_credits_charged.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "library_list",
+    "title": "List media library",
+    "description": "List the user's Studio media library, newest first, optionally by kind or origin (generated or uploaded): each asset's library_asset_id, url, kind and length. Pass {library_asset_id} to any media input, such as timeline_add's source or video_generate's start_image.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "library_add",
+    "title": "Import library media",
+    "description": "Import 1-10 media files: ChatGPT attachments in files (Ava downloads them; no PUT), or public URLs/completed uploads in items. Links are copied into Ava's storage, uploads stay where they are, and other video codecs are converted to an H.264 MP4 copy. Poll jobs_get for library_asset_id and failed; use {library_asset_id} in video_generate, image_generate or project_ask.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "library_upload_url",
+    "title": "Create library upload link",
+    "description": "For clients that can PUT bytes, get a presigned link to upload one local image (JPEG, PNG or WebP, up to 50 MB), video (MP4 or MOV, up to 500 MB) or audio file (MP3, WAV or M4A, up to 9.2 MB): PUT the bytes to upload_url with exactly the returned headers before expires_at (15 minutes). Then pass media_url to library_add or a media input as {url}; an unused upload_url contains no file. For ChatGPT attachments use library_add files instead.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ava_ask",
+    "title": "Ask campaign copilot",
+    "description": "One turn with Ava, the campaign copilot of Studio's Ask Ava (shared with Studio): her reply plus her actions, for 40 credits per message plus the AI usage. Via the API she starts nothing that spends credits: she reads, discusses, approves and edits drafts (with this key's campaigns scopes); plans, drafting, production, research and settings come back failed, naming the tool to use (plan_run, concepts_draft_more, creative_produce, research_*, campaign_update). Returns a job_id; poll jobs_get.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "jobs_get",
+    "title": "Read job status",
+    "description": "Check a job from any tool that returns a job_id; its kind is the tool's name. Poll every few seconds until status is succeeded or failed: result holds the tool's output (failed project_ask jobs can also retain partial results), credits_charged the API credits it cost and media_credits_charged the media credits its generation spent (while running: credits_held and media_credits_estimate).",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  }
+]

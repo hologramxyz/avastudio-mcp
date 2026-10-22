@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ava": {
+      "type": "http",
+      "url": "https://mcp.avastudio.com/mcp"
+    }
+  }
+}

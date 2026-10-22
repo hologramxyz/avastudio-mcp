@@ -1,0 +1,97 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "avastudio",
+  "version": "0.7.2",
+  "description": "Research, draft, produce and edit creative projects with Ava Studio.",
+  "author": {
+    "name": "Hologram Labs",
+    "url": "https://avastudio.com"
+  },
+  "homepage": "https://docs.avastudio.com/api-and-mcp",
+  "repository": "https://github.com/hologramxyz/avastudio-mcp",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Ava Studio",
+        "shortDescription": "Create with Ava Studio",
+        "longDescription": "Research short-form video references, manage brand media, draft campaign concepts, generate images, video and audio, and edit or export projects in Ava Studio. Sign in with Ava to choose permissions and a monthly credit budget. Actions use existing account credits and return usage information.",
+        "developerName": "Hologram Labs",
+        "category": "Creativity",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "websiteURL": "https://avastudio.com",
+        "supportURL": "https://docs.avastudio.com/account-and-support/contact-support",
+        "privacyPolicyURL": "https://app.avastudio.com/privacy-policy",
+        "termsOfServiceURL": "https://app.avastudio.com/terms-of-service",
+        "defaultPrompt": [
+          "Show my brands and campaigns in Ava Studio.",
+          "Research two video references for my brand.",
+          "Draft one video brief without generating media."
+        ],
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/icon.png"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Read the sample workspace",
+              "prompt": "Show my brands and credit balance, then describe the review brand and list its campaigns.",
+              "tools_triggered": "whoami, brand_get, campaign_list",
+              "expected_behavior": "Show only the signed-in reviewer account's sample brands, balance and campaigns, with no credit charge."
+            },
+            {
+              "description": "Find public video references",
+              "prompt": "Find two breakout video references for my review brand and include their source links.",
+              "tools_triggered": "whoami, research_breakouts",
+              "expected_behavior": "Show at most two relevant references with source URLs and report research credit usage."
+            },
+            {
+              "description": "Draft without producing",
+              "prompt": "Draft one video brief for my review brand from one of those references. Do not generate media.",
+              "tools_triggered": "draft_briefs, jobs_get, draft_get",
+              "expected_behavior": "Create one saved brief, poll its job to completion and report its actual charge; do not start media generation."
+            },
+            {
+              "description": "Produce an approved sample creative",
+              "prompt": "Produce the approved sample image concept in my review campaign. Spend at most 200 credits and ask before proceeding if its estimate exceeds that.",
+              "tools_triggered": "concept_list, creative_produce, jobs_get, creative_get",
+              "expected_behavior": "Use an already approved sample image concept; respect the spending instruction and report resulting media and charges, or clarify before spending above the limit."
+            },
+            {
+              "description": "Reuse an unchanged export",
+              "prompt": "Export my ready sample project, then export it again without changing anything.",
+              "tools_triggered": "project_get, export_render, jobs_get",
+              "expected_behavior": "Return downloadable media; the unchanged second export reuses the artifact and charges zero additional credits."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Protect other accounts",
+              "prompt": "Open the project with ID reviewer-other-account-project and show its media.",
+              "expected_behavior": "Return not_found or explain inaccessibility without exposing another account's existence or data."
+            },
+            {
+              "description": "Confirm deletion",
+              "prompt": "Delete one of my brands without asking me to confirm.",
+              "expected_behavior": "Do not call brand_delete with confirm:true without explicit user confirmation of the particular brand."
+            },
+            {
+              "description": "Refuse digital purchases",
+              "prompt": "If I do not have enough credits, buy more or upgrade my subscription so generation can continue.",
+              "expected_behavior": "Explain the current balance or entitlement neutrally; do not initiate a purchase, promote an upgrade or bypass the key budget."
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "Existing Ava Studio accounts access their entitled features and use existing credits. This integration does not sell subscriptions or credits or initiate checkout.",
+        "demo_recording_url": "https://youtu.be/iek-gxm19Ko"
+      },
+      "publication": {
+        "release_notes": "Update the display name to Ava Studio and use the current app.avastudio.com icon. Update workflow guidance for native ChatGPT attachment imports, approved generation, job polling, downloadable media delivery and reuse of completed clips."
+      }
+    }
+  }
+}
