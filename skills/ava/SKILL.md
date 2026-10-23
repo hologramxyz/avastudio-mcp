@@ -64,6 +64,14 @@ their campaign; standalone editable projects appear in Library → Projects.
 
 ## Reference cloning and media
 
+When asked to clone a TikTok, Reel, or Short, let Ava fetch and analyze the
+link. Your own browser does not need access to it. Try the Ava tool before
+declaring a public reference inaccessible; report its actual error if it fails.
+For an editable clone, use a project and `project_ask` with the reference URL
+attachment below. `draft_clone` creates only a brief. After the user approves
+production, use `generate:true` with the agreed media budget, then poll and
+export. Do not silently change a request to generate into planning only.
+
 Pass reference attachments to `project_ask`: a TikTok photo post uses
 `{type:"carousel",source:{url}}`, a social video uses
 `{type:"url",source:{url}}`, and an image or video file uses its corresponding
@@ -95,6 +103,11 @@ ChatGPT supplies: `download_url`, `file_id`, and optional `mime_type` and
 `file_name`. Ava downloads and saves the files directly. Do not invent file ids
 or download URLs, and do not replace this handoff with `library_upload_url`.
 
+For a clone with a reference MP4 and actor/product photos, import those files
+first. Attach the MP4 as `type:"video"` and the photos as `type:"image"`, each
+with its returned `source:{library_asset_id}`. Include the user's script and
+instructions in the `project_ask` message; no manual rebuild in Studio is needed.
+
 Poll the import job, check both `result.assets` and `result.failed`, then use
 the returned `library_asset_id` in the actual generation inputs. For example,
 an image reference can be `video_generate.reference_images` containing
@@ -104,6 +117,11 @@ If ChatGPT does not supply the attachment or its download has expired, ask
 for a fresh attachment or accessible HTTPS link. Do not silently substitute a
 text description for the requested photo and spend on that altered request;
 obtain approval for such a fallback.
+When a required attachment cannot be transferred, explain the failed handoff
+and ask for it here. Do not create an empty project or spend on a placeholder
+production plan as a substitute for the requested video. Reuse an existing
+project when the file is available; offer a planning-only fallback if the user
+wants one.
 
 Public HTTPS links use `library_add.items`. Clients that can send file bytes
 may use `library_upload_url`, PUT the bytes with the returned headers, then
