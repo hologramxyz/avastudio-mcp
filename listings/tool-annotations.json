@@ -142,7 +142,7 @@
   {
     "name": "research_formats",
     "title": "Research video formats",
-    "description": "Rank video formats within Ava's collected corpus for a niche or brand; scores are internal ordering heuristics without a calibrated success threshold. Costs 1 credit per call. Explain the pick with linked examples, recorded public counters, publication and measurement dates, sample limits and relevance to the brand; pass it to draft_briefs.format.",
+    "description": "Rank video formats in Ava's corpus; scores are internal heuristics with no calibrated success threshold. Costs 1 credit per call. Explain the pick with source links, public metrics, publication/measurement dates, sample limits and brand fit; carry it into the selected campaign/project brief, or draft_briefs.format for standalone written briefs only.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -152,7 +152,7 @@
   {
     "name": "research_hooks",
     "title": "Research opening hooks",
-    "description": "Find opening hooks from sampled videos, grouped by pattern with source links. Costs 1 credit per call. Cite examples and their available public metrics and dates; label Ava's hook scores as analysis estimates and use the hooks to seed draft_briefs.",
+    "description": "Find opening hooks from sampled videos, grouped by pattern with source links. Costs 1 credit per call. Cite public metrics and dates, label hook scores as analysis estimates, and carry the evidence into the selected campaign/project brief; use draft_briefs only for standalone written briefs.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -162,7 +162,7 @@
   {
     "name": "research_search",
     "title": "Search public video references",
-    "description": "Search the UGC corpus by keyword, format, public views, derived breakout ratio, region or recency. Costs 1 credit per call. Cite returned platform URLs and dated public counters, explain sampled creator baselines and evidence limits, and pass suitable video_ids to draft_briefs or research_similar.",
+    "description": "Search UGC references by keyword, format, public views, breakout ratio, region or recency. Costs 1 credit per call. Cite platform URLs and dated public counters, explain sampled baselines and evidence limits, and pass references into project_ask or the campaign brief; video_ids can seed draft_briefs for standalone written briefs only.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -192,7 +192,7 @@
   {
     "name": "research_my_ads",
     "title": "Read connected ad performance",
-    "description": "The user's own Meta ad results (spend, CTR, hook rate, hold, cost, 0-100 score) with account medians and a short why_it_works / why_it_didnt per ad. Call meta_status first; if not connected, follow next_steps to meta_connect. Cite ads by name, and pass winning ad_ids to draft_briefs.my_ad_ids.",
+    "description": "Read the user's Meta ad results with account medians and explanations; call meta_status first and use meta_connect if disconnected. Cite ads by name and carry the evidence into the selected campaign/project brief. Winning ad_ids can seed draft_briefs.my_ad_ids for standalone written briefs only.",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
@@ -231,8 +231,8 @@
   },
   {
     "name": "draft_briefs",
-    "title": "Draft creative briefs",
-    "description": "Draft briefs for a brand grounded in market videos and, when Meta is connected, its own best ads: short-form video by default, or with output a carousel or static image ad; concepts only, no media. Costs 10 credits per brief plus the AI usage, typically \u2248 25 credits per brief in total. Returns a job_id; poll jobs_get, then use draft_spec, draft_prompts, draft_check or draft_open on the brief ids, saved in the brand's \"From your agent\" campaign in Ava Studio.",
+    "title": "Draft standalone briefs",
+    "description": "Write standalone video/carousel/static briefs only; complete videos use project_ask and campaign planning uses plan_run. Costs 10 credits per brief plus the AI usage (typically about 25 total); returns a job_id to poll with jobs_get. Always saves to the brand's 'From your agent' draft container, cannot target another campaign or supply creative_produce; use draft_get/spec/prompts/check/open to read or refine.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -262,7 +262,7 @@
   {
     "name": "draft_iterate",
     "title": "Revise creative brief",
-    "description": "Revise a brief from plain-language feedback (a punchier hook, less salesy, a different CTA); only revises briefs created through the API. Costs 8 credits plus the AI usage, typically \u2248 15 credits in total. Returns a job_id; poll jobs_get, the result is the revised Brief.",
+    "description": "Revise a brief from plain-language feedback (a punchier hook, less salesy, a different CTA); only revises briefs created through the API. Costs 8 credits plus the AI usage, typically ≈ 15 credits in total. Returns a job_id; poll jobs_get, the result is the revised Brief.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -292,7 +292,7 @@
   {
     "name": "draft_check",
     "title": "Evaluate creative brief",
-    "description": "Score a brief 0-100 against winning videos in its niche, with strengths, risks and the most similar winners; the score is an AI judgment, not a calibrated prediction of performance. Costs 3 credits plus the AI usage, typically \u2248 4 credits in total. Use it to compare briefs before committing; revise weak ones with draft_iterate.",
+    "description": "Score a brief 0-100 against winning videos in its niche, with strengths, risks and the most similar winners; the score is an AI judgment, not a calibrated prediction of performance. Costs 3 credits plus the AI usage, typically ≈ 4 credits in total. Use it to compare briefs before committing; revise weak ones with draft_iterate.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -312,7 +312,7 @@
   {
     "name": "draft_clone",
     "title": "Draft brief from reference video",
-    "description": "Clone one short-form video (TikTok, Instagram Reel or YouTube Short URL) into ONE on-brand brief that keeps its format, beats, pacing, hook mechanic and caption style. Sources up to 2 minutes. Costs 10 credits plus the AI usage, typically \u2248 25 credits in total; returns a job_id: poll jobs_get, then use draft_spec, draft_prompts or draft_open on the brief, saved in the brand's \"From your agent\" campaign in Ava Studio.",
+    "description": "Clone one short-form video (TikTok, Instagram Reel or YouTube Short URL) into ONE on-brand brief that keeps its format, beats, pacing, hook mechanic and caption style. Sources up to 2 minutes. Costs 10 credits plus the AI usage, typically ≈ 25 credits in total; returns a job_id: poll jobs_get, then use draft_spec, draft_prompts or draft_open on the brief, saved in the brand's \"From your agent\" campaign in Ava Studio.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -342,7 +342,7 @@
   {
     "name": "campaign_create",
     "title": "Create campaign",
-    "description": "Create a campaign for a brand, organic posts or paid Meta ads, with Studio's default settings for that type; automation starts off, so Ava plans only when you call plan_run. Returns the Campaign; next call plan_run, or share studio_url to fine-tune formats and cast in Studio.",
+    "description": "Create an organic or paid campaign with the actual app/product brief and objectives; first use campaign_list/get to reuse the user's selected campaign. Creation does not plan or generate: use plan_get/plan_run, concept_list, approval and creative_produce on this same campaign_id, not draft_briefs' separate container. Automation starts off; returns the Campaign and studio_url for optional settings changes.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
@@ -362,7 +362,7 @@
   {
     "name": "plan_run",
     "title": "Run campaign planner",
-    "description": "Run Ava's planner on a campaign for the current period: research what is working for the brand and draft concepts for review, always in draft mode, so it never produces media. Costs 200 credits, only when it starts a run; if this period's run already finished or is in progress, the job returns that run with started false and nothing is charged. Takes several minutes: returns a job_id; poll jobs_get, then review the concepts with concept_list.",
+    "description": "Use for campaign planning: research the selected campaign and draft its concepts, then concept_list, approval and creative_produce on the same campaign_id. Costs 200 credits, only when it starts a run; check plan_get first, since an existing current-period run returns started:false without a charge. Takes minutes and produces no media; poll jobs_get, and never substitute standalone draft_briefs for this planner.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -491,8 +491,8 @@
   },
   {
     "name": "project_ask",
-    "title": "Plan or clone in a project",
-    "description": "Run Studio's project planner to clone videos or TikTok photo carousels and plan with attached media; start with project_create. Set generate:true to produce, or relay needs_input questions and send the user's answer in the same project. Costs 10 credits plus AI tokens and Studio media; AI reservations grow within the balance/key budget without a fixed turn cap; media_credit_limit bounds estimated media spend (default 300); poll jobs_get.",
+    "title": "Plan and produce a video",
+    "description": "Run Studio's content-planning agent for a complete original app/product video or a video/photo-carousel clone; start with project_create/list and pass brief/assets. Costs 10 credits plus AI tokens and Studio media; AI holds grow within balance/budget, media_credit_limit bounds estimated media (default 300). Plan with generate:false, media_credit_limit:0 (AI billed); after approval reuse the SAME project with generate:true, relay needs_input and poll jobs_get; campaign planning uses plan_run.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -522,7 +522,7 @@
   {
     "name": "generation_estimate",
     "title": "Estimate media generation cost",
-    "description": "Quote 1-20 generations at Studio's media credits for the model and settings (what the API charges too), plus the total; video bills on the clip's measured length, which can run a frame long (4 s may bill as 4.04 s). Work priced after the fact is quoted at its most: image_layerize at 17 layers of a large image (up to 1536\u00d71536 pixels costs half), video_remove_background at the duration given (else 60 s). Tell the user the total first; a key with a monthly limit needs room for it.",
+    "description": "Quote 1-20 generations at Studio's media credits for the model and settings (what the API charges too), plus the total; video bills on the clip's measured length, which can run a frame long (4 s may bill as 4.04 s). Work priced after the fact is quoted at its most: image_layerize at 17 layers of a large image (up to 1536×1536 pixels costs half), video_remove_background at the duration given (else 60 s). Tell the user the total first; a key with a monthly limit needs room for it.",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
@@ -602,7 +602,7 @@
   {
     "name": "image_layerize",
     "title": "Separate image layers",
-    "description": "Split an image into editable transparent layers (subject, text, background); the layers are saved to the user's Studio library. Costs Studio's price for the model and settings (the same media credits as in Ava Studio), per layer made (2-17): generation_estimate quotes all 17 at the large-image price, the most it can cost (a key with a monthly limit needs room for that); an image up to 1536\u00d71536 pixels costs half. Returns a job_id; poll jobs_get for the layers.",
+    "description": "Split an image into editable transparent layers (subject, text, background); the layers are saved to the user's Studio library. Costs Studio's price for the model and settings (the same media credits as in Ava Studio), per layer made (2-17): generation_estimate quotes all 17 at the large-image price, the most it can cost (a key with a monthly limit needs room for that); an image up to 1536×1536 pixels costs half. Returns a job_id; poll jobs_get for the layers.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -612,7 +612,7 @@
   {
     "name": "project_create",
     "title": "Create empty project",
-    "description": "Create an empty Studio project (a timeline) with a title and aspect ratio, optionally for a brand or campaign; returns the Project. Fill it with scene_generate, timeline_add and captions_generate, then export_render.",
+    "description": "Create a Studio project for a brand/campaign; next use project_ask for a complete original video or clone, keeping the same project_id through planning, approved generation and export_render. Linking campaign_id organizes the project but does not run campaign planning: use plan_run and creative_produce for that. For manual editing use scene_generate, timeline_add and captions_generate.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,

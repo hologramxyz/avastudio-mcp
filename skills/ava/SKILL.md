@@ -10,6 +10,40 @@ the credit balance, and the connection's monthly budget. The available tool
 list reflects granted scopes. If a tool is missing, explain the needed
 permission; never ask the user to paste credentials into chat.
 
+## Choose the planning workflow first
+
+Start with `whoami` and the brand context. Carry the app/product summary, audience,
+goal, reference links and supplied assets into the selected workflow.
+
+- **The user asks to use a campaign:** reuse the selected campaign with
+  `campaign_list` / `campaign_get`, or create it with the actual `brief` and
+  `objectives`. Check `plan_get`, then call `plan_run` after approval of its
+  200-credit new-run cost. Review `concept_list`, approve the selected concepts,
+  and use `creative_produce` after production approval. Keep the same
+  `campaign_id` throughout. Creating a campaign or linking a project does not run
+  the planner; verify the actual run before claiming campaign planning happened.
+- **The user asks for one complete original video or clone:** use
+  `project_create` / `project_list`, then `project_ask`, Studio's content-planning
+  agent. Pass the full brief and assets. For planning only, use `generate:false`
+  and `media_credit_limit:0`; AI usage is still charged. After approval continue
+  on the **same project** with `generate:true` and the approved media estimate
+  allowance, poll the job, inspect the project and export. If the user selected
+  a campaign for organization, pass its `campaign_id` to `project_create`.
+- **The user asks only for written briefs, scripts or prompts:** use
+  `draft_briefs` / `draft_clone`. `draft_briefs` always saves in the separate
+  “From your agent” draft container; it cannot target the user's selected
+  campaign, run its planner or supply concepts to `creative_produce`.
+- **The user asks for an individual asset or manual editing:** use the model
+  catalog, quote and individual generation/timeline tools. Do not silently
+  replace a requested planning workflow with manual scene-by-scene generation.
+
+If the user changes direction while work is running, inspect the existing jobs
+and saved work. Reuse the selected campaign/project and successful clips; do not
+create a second campaign just because standalone briefs are running. Explain any
+additional planning cost before starting it. If tools are deferred, discover/load
+`plan_run` or `project_ask`; if permissions prevent their use, explain the missing
+permission rather than substituting another workflow.
+
 ## Deliver generated media
 
 For a generation request, use `models_list` and `generation_estimate` to quote
@@ -43,24 +77,6 @@ use `timeline_add` to import the existing video with `include_audio:true`.
 Do not regenerate it just to create a project. Campaign projects stay under
 their campaign; standalone editable projects appear in Library → Projects.
 
-## Choose the right workflow
-
-- Research references with `research_breakouts`, `research_search`, or another
-  relevant research tool. Include the returned source URLs with findings.
-  Use `research_search` with `media_type:"carousel"` for photo references;
-  `video` and `all` are also supported. Photo posts have `/photo/` URLs.
-- `draft_briefs` and `draft_clone` write briefs; they do not produce media.
-  `draft_get`, `draft_spec`, and `draft_prompts` read the resulting work.
-- Campaigns use `campaign_create`, `plan_run`, `concept_list`, approval, and
-  `creative_produce`. Approval alone starts no production. Show the selected
-  concept and its estimated cost before carrying out production the user
-  has not already authorized.
-- For a project planning conversation, use `project_create` or `project_list`,
-  then `project_ask`. `ava_ask` is the separate campaign copilot and cannot
-  start research, drafting, planning, production, or automation through chat.
-- For individual generations, use `models_list` and `generation_estimate`,
-  then the appropriate image, video, or audio tool. Inspect `project_get`
-  before editing a timeline; `export_render` exports the saved project.
 
 ## Reference cloning and media
 
