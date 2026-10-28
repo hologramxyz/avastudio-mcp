@@ -3,7 +3,7 @@
   "name": "com.avastudio/ava",
   "title": "Ava Studio",
   "description": "Research video, manage campaigns, generate media, and edit or export Ava Studio projects.",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "websiteUrl": "https://docs.avastudio.com/api-and-mcp",
   "remotes": [
     {
