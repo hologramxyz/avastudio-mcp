@@ -232,7 +232,7 @@
   {
     "name": "draft_briefs",
     "title": "Draft standalone briefs",
-    "description": "Write standalone briefs only; complete videos use project_ask and campaign planning uses plan_run. Costs 10 credits per brief plus the AI usage (typically about 25 total); returns a job_id to poll with jobs_get. Always saves to the brand's 'From your agent' draft container, cannot target another campaign or supply creative_produce; use draft_get/spec/prompts/check/open to read or refine.",
+    "description": "Write standalone video/carousel/static briefs only; complete videos use project_ask and campaign planning uses plan_run. Costs 10 credits per brief plus the AI usage (typically about 25 total); returns a job_id to poll with jobs_get. Always saves to the brand's 'From your agent' draft container, cannot target another campaign or supply creative_produce; use draft_get/spec/prompts/check/open to read or refine.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -492,7 +492,7 @@
   {
     "name": "project_ask",
     "title": "Plan and produce a video",
-    "description": "Run Studio's content-planning agent for a complete original app/product video or clone; start with project_create/list and pass the full brief/assets. Costs 10 credits plus AI tokens and Studio media; AI holds grow within balance/budget, media_credit_limit bounds estimated media (default 300). Plan with generate:false, media_credit_limit:0 (AI billed); after approval continue in the SAME project with generate:true, relay needs_input questions and poll jobs_get; campaign planning uses plan_run.",
+    "description": "Run Studio's content-planning agent for a complete original app/product video or a video/photo-carousel clone; start with project_create/list and pass brief/assets. Costs 10 credits plus AI tokens and Studio media; AI holds grow within balance/budget, media_credit_limit bounds estimated media (default 300). Plan with generate:false, media_credit_limit:0 (AI billed); after approval reuse the SAME project with generate:true, relay needs_input and poll jobs_get; campaign planning uses plan_run.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
