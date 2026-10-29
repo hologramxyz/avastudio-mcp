@@ -31,9 +31,9 @@ private specification package, reviewer credentials or publisher keys.
 - `listings/`: Claude/Smithery form copy and all 76 tool annotations.
 
 The tool titles, descriptions and safety labels are a submission snapshot of
-the production catalog at revision `94897358606fa4cadc25dd87deabcdcf3ded70fd`
-(2026-10-22). Refresh this snapshot from the hosted service before a directory
-submission if its tool catalog has changed.
+API contract 0.8.3 (2026-10-29), including native carousel image projects.
+Refresh this snapshot from the hosted service before a directory submission
+if its tool catalog has changed.
 
 Validate and build the OpenAI upload ZIP with Node.js 22+ and `zip`:
 
