@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "avastudio",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "Research, draft, produce and edit creative projects with Ava Studio.",
   "author": {
     "name": "Hologram Labs",
@@ -55,10 +55,10 @@
               "expected_behavior": "Create one saved brief, poll its job to completion and report its actual charge; do not start media generation."
             },
             {
-              "description": "Produce an approved sample creative",
-              "prompt": "Produce the approved sample image concept in my review campaign. Spend at most 200 credits and ask before proceeding if its estimate exceeds that.",
-              "tools_triggered": "concept_list, creative_produce, jobs_get, creative_get",
-              "expected_behavior": "Use an already approved sample image concept; respect the spending instruction and report resulting media and charges, or clarify before spending above the limit."
+              "description": "Produce a native carousel",
+              "prompt": "Create a two-slide carousel for my review brand with on-slide text. Spend at most 200 credits and ask before proceeding if its quote exceeds that. Return image files, not a video.",
+              "tools_triggered": "project_create, project_ask, jobs_get, project_get, export_render",
+              "expected_behavior": "Create an image project, keep the approved slide order and text through image generation, and return ordered rendered image URLs plus the PNG/ZIP export within the approved budget."
             },
             {
               "description": "Reuse an unchanged export",
@@ -90,7 +90,7 @@
         "demo_recording_url": "https://youtu.be/iek-gxm19Ko"
       },
       "publication": {
-        "release_notes": "Clarify original-video planning through Studio's content-planning agent and campaign planning through plan_run. Preserve the selected campaign/project, distinguish standalone briefs, and reuse completed work when changing workflows."
+        "release_notes": "Create carousel and static posts as image projects. Preserve slide order and on-slide text, and deliver rendered image URLs plus the PNG/ZIP export instead of an MP4 slideshow. Existing video workflows remain supported."
       }
     }
   }

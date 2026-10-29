@@ -22,7 +22,14 @@ goal, reference links and supplied assets into the selected workflow.
   and use `creative_produce` after production approval. Keep the same
   `campaign_id` throughout. Creating a campaign or linking a project does not run
   the planner; verify the actual run before claiming campaign planning happened.
-- **The user asks for one complete original video or clone:** use
+- **The user asks for a carousel or static post:** create with
+  `project_create { project_type: "image", title, aspect_ratio }`, then use
+  `project_ask` on the same project through planning and approved generation.
+  Keep one image-mode scene per slide, source/requested slide order, and on-slide
+  text. `export_render.image_urls` contains the rendered slides in order, with
+  text and the selected watermark setting applied; `output_url` is the PNG/ZIP.
+  Use a video project only when a video is explicitly requested.
+- **The user asks for one complete original video or video clone:** use
   `project_create` / `project_list`, then `project_ask`, Studio's content-planning
   agent. Pass the full brief and assets. For planning only, use `generate:false`
   and `media_credit_limit:0`; AI usage is still charged. After approval continue

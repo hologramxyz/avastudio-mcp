@@ -612,7 +612,7 @@
   {
     "name": "project_create",
     "title": "Create empty project",
-    "description": "Create a Studio project for a brand/campaign; next use project_ask for a complete original video or clone, keeping the same project_id through planning, approved generation and export_render. Linking campaign_id organizes the project but does not run campaign planning: use plan_run and creative_produce for that. For manual editing use scene_generate, timeline_add and captions_generate.",
+    "description": "Create a Studio project; use project_type:image for a carousel or static post, video (default) for a video. Use project_ask on the same project_id through planning and approved generation, then export_render (images/ZIP for image projects, MP4 for video). Linking campaign_id organizes the project; campaign planning uses plan_run/creative_produce, and manual editing uses scene_generate/timeline tools.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
