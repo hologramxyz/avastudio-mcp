@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "avastudio",
-  "version": "0.7.5",
+  "version": "0.8.0",
   "description": "Research, draft, produce and edit creative projects with Ava Studio.",
   "author": {
     "name": "Hologram Labs",
@@ -90,7 +90,7 @@
         "demo_recording_url": "https://youtu.be/iek-gxm19Ko"
       },
       "publication": {
-        "release_notes": "Create carousel and static posts as image projects. Preserve slide order and on-slide text, and deliver rendered image URLs plus the PNG/ZIP export instead of an MP4 slideshow. Existing video workflows remain supported."
+        "release_notes": "Add the launch-remake skill. Pick a reference from Ava's launch style library and remake its cuts, camera and sound for a product from its real page. The film renders locally with HyperFrames, so the skill needs a local agent such as Codex. Existing workflows remain supported."
       }
     }
   }
