@@ -29,6 +29,11 @@ goal, reference links and supplied assets into the selected workflow.
   text. `export_render.image_urls` contains the rendered slides in order, with
   text and the selected watermark setting applied; `output_url` is the PNG/ZIP.
   Use a video project only when a video is explicitly requested.
+- **The user asks for a launch video** (a product launch film, or a remake of
+  a launch from Ava's library): pick the reference with `launch_style_list` and
+  `launch_style_get`, then build and render the film locally with the
+  `launch-remake` skill, not with Studio's `project_ask`. Only an
+  `avatar_clone` style goes to `project_create` / `project_ask`.
 - **The user asks for one complete original video or video clone:** use
   `project_create` / `project_list`, then `project_ask`, Studio's content-planning
   agent. Pass the full brief and assets. For planning only, use `generate:false`
