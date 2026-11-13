@@ -97,12 +97,24 @@ page_html = open(os.path.join(cap, "page.html")).read()
 if S["page"].get("videos"):
     os.makedirs(os.path.join(proj, "assets", "cap"), exist_ok=True)
 
+    def see_through(src, seen={}):
+        if src not in seen:
+            f = os.path.join(cap, src)
+            pr = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=codec_name,pix_fmt:stream_tags=alpha_mode", "-of", "csv=p=0", f],
+                                capture_output=True, text=True).stdout.strip().lower()
+            seen[src] = False
+            if re.search(r"(^|,)(yuva|rgba|argb|bgra|abgr|gbrap|ya)|,1$", pr):
+                dec = {"vp9": ["-c:v", "libvpx-vp9"], "vp8": ["-c:v", "libvpx"]}.get(pr.split(",")[0], [])
+                r = subprocess.run(["ffmpeg", "-nostdin", "-v", "error", *dec, "-i", f, "-an", "-vf", "format=rgba,alphaextract,signalstats,metadata=print:key=lavfi.signalstats.YMIN:file=-",
+                                    "-f", "null", "-"], capture_output=True, text=True)
+                low = [int(v) for v in re.findall(r"YMIN=(\d+)", r.stdout)]
+                seen[src] = bool(r.returncode or not low or min(low) < 255)
+                print(f"page video {src} has an alpha channel, it stays a still" if seen[src] else f"page video {src} is tagged with alpha but every pixel is opaque, it plays")
+        return seen[src]
+
     def live(m, n=iter(range(10 ** 4)), done=set()):
         src, out = m.group(1), os.path.splitext(m.group(1))[0] + "-loop.mp4"
-        pr = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=pix_fmt:stream_tags=alpha_mode", "-of", "csv=p=0",
-                             os.path.join(cap, src)], capture_output=True, text=True).stdout.strip().lower()
-        if re.search(r"(^|,)(yuva|rgba|argb|bgra|abgr|gbrap|ya)|,1$", pr):
-            print(f"page video {src} has an alpha channel, it stays a still")
+        if see_through(src):
             return m.group(0)
         if out not in done:
             r = subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-stream_loop", "-1", "-i", os.path.join(cap, src), "-t", str(WIN[1] + 0.5), "-an",
