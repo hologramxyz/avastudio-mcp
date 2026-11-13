@@ -1,0 +1,27 @@
+{
+ "name": "<film name>",
+ "reference": {"style_id": "<style id>", "title": "<reference title>", "post_url": "<reference post url>"},
+ "brand_url": "<product page url>",
+ "size": [1920, 1080], "fps": 60, "dur": 12,
+ "marks": {"end": 10},
+ "look": {"bg": "<canvas colour>", "edge": "none", "dof": {"offsets": [], "blurs": []}, "fog": {"far": 0, "near": 0},
+          "vignette": {"dark": 0}, "bloom": {"opacity": 0}, "grain": 0},
+ "page": {"hide": [], "drop": [], "css": ""},
+ "overlays": [],
+ "shots": [
+  {"t0": 0, "ref_window": [0, 2.5], "subject": {"kind": "product", "sel": "<hero element>"},
+   "focus": {"sel": "<hero element>"}, "at": [960, 540], "zoom": [1, 1], "drift": [0, 0]},
+  {"t0": 2.5, "ref_window": [2.5, 5], "subject": {"kind": "product", "sel": "<product element>"},
+   "focus": {"sel": "<product element>"}, "at": [960, 540], "zoom": [1, 1], "drift": [0, 0]},
+  {"t0": 5, "ref_window": [5, 7.5], "subject": {"kind": "proof", "sel": "<real number or result>"},
+   "focus": {"sel": "<real number or result>"}, "at": [960, 540], "zoom": [1, 1], "drift": [0, 0]},
+  {"t0": 7.5, "ref_window": [7.5, 10], "subject": {"kind": "product", "sel": "<hero output>"},
+   "focus": {"sel": "<hero output>"}, "at": [960, 540], "zoom": [1, 1], "drift": [0, 0]},
+  {"t0": 10, "ref_window": [10, 12], "subject": {"kind": "brand", "sel": "#end"}, "solo": [],
+   "focus": [720, 450], "at": [960, 540]}
+ ],
+ "events": [
+  {"type": "end_line", "t": "end", "word": "<product name>", "rest": "<the one line>", "accent": "",
+   "font": "<a font stack the page declares>", "color": "<end card text colour>", "sheen": "<end card accent colour>", "bg": "<end card background colour>"}
+ ]
+}
