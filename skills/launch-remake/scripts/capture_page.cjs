@@ -18,7 +18,7 @@ const CHROME = process.env.CHROME || ['/usr/bin/google-chrome', '/Applications/G
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const AS = path.join(out, 'assets/cap');
 if (!VERIFY) fs.mkdirSync(AS, { recursive: true });
-const SEL = 'h1,h2,h3,h4,p,button,a,input,textarea,select,table,thead,tbody,tr,th,td,section,header,nav,footer,form,img,svg,li,[id],[role]';
+const SEL = 'h1,h2,h3,h4,p,button,a,input,textarea,select,table,thead,tbody,tr,th,td,section,header,nav,footer,form,img,svg,video,canvas,iframe,li,[id],[role]';
 const TOL = 4;
 
 function scopeSelectors(css) {
@@ -63,6 +63,7 @@ function boxesIn(sel, rootSel, max) {
   };
   const out = [];
   for (const el of root.querySelectorAll(sel)) {
+    if (el.closest('[data-cap-drop]')) continue;
     const r = el.getBoundingClientRect();
     if (r.width < 2 || r.height < 2) continue;
     out.push({ path: pathOf(el), tag: el.tagName.toLowerCase(), cls: typeof el.className === 'string' ? el.className.slice(0, 80) : '', box: [r.x + scrollX, r.y + scrollY, r.width, r.height].map(Math.round), text: (el.innerText || el.getAttribute('placeholder') || '').trim().replace(/\s+/g, ' ').slice(0, 80), ...(page && el instanceof HTMLElement ? { lay: lay(el) } : {}) });
