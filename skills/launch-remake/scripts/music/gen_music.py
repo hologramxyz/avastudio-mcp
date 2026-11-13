@@ -39,13 +39,15 @@ def run(j):
         open(p, "wb").write(data)
         rec = dict(name=j["name"], ok=True, bytes=len(data), secs=round(time.time() - t0), cost=h.get("character-cost"), song_id=h.get("song-id"), job=j)
     except urllib.error.HTTPError as e:
-        rec = dict(name=j["name"], ok=False, code=e.code, err=e.read()[:400].decode(errors="replace"), job=j)
+        rec = dict(name=j["name"], ok=False, code=e.code, err=e.read()[:400].decode(errors="replace").replace(KEY, "[redacted]"), job=j)
     except Exception as e:
-        rec = dict(name=j["name"], ok=False, err=str(e)[:300], job=j)
+        rec = dict(name=j["name"], ok=False, err=str(e).replace(KEY, "[redacted]")[:300], job=j)
     open(os.path.join(out, "receipts.jsonl"), "a").write(json.dumps(rec) + "\n")
     print({k: v for k, v in rec.items() if k != "job"}, flush=True)
     return rec
 
 
 with ThreadPoolExecutor(4) as p:
-    list(p.map(run, json.load(open(sys.argv[1]))))
+    results = list(p.map(run, json.load(open(sys.argv[1]))))
+if any(not result["ok"] for result in results):
+    sys.exit(1)

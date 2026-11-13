@@ -15,4 +15,5 @@ try:
         out = json.load(r)
     print("".join(p.get("text", "") for p in out["candidates"][0]["content"]["parts"]))
 except urllib.error.HTTPError as e:
-    print("ERR", e.code, e.read()[:600].decode(errors="replace").replace(key, "***"))
+    print("ERR", e.code, e.read()[:600].decode(errors="replace").replace(key, "[redacted]"), file=sys.stderr)
+    sys.exit(1)
