@@ -3,7 +3,6 @@ set -euo pipefail
 P=$(cd "$1" && pwd); O=$(cd "$(dirname "$2")" && pwd)/$(basename "$2"); Q=${4:-delivery}
 X=$(cd "$(dirname "$0")" && pwd)
 F=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['fps'])" "$P/build.json")
-want=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['frames'])" "$P/build.json")
 if [ -n "${3:-}" ] && [ "$3" != "$F" ]; then echo "the film was built at $F fps; rebuild it to render at $3 fps"; exit 1; fi
 HF=(hyperframes); command -v hyperframes >/dev/null || HF=(npx --yes hyperframes@0.9.19)
 for p in "${PY:-}" "$HOME/.launch-remake/venv/bin/python" "$HOME/venv/bin/python" python3; do [ -n "$p" ] && command -v "$p" >/dev/null && { PY=$p; break; }; done
@@ -16,16 +15,15 @@ trap 'rm -rf "$L"' EXIT
 trap '[ -n "$CH" ] && kill -TERM "$CH" 2>/dev/null; wait; exit 143' INT TERM
 cd "$P"
 attempt() {
-  local s=$SECONDS mode n
+  local s=$SECONDS mode t
   "${HF[@]}" render --quality "$Q" --fps "$F" "$@" --output "$O" > "$L/render.log" 2>&1 </dev/null &
   CH=$!
   wait "$CH" || { CH=; tail -n 20 "$L/render.log"; return 1; }
   CH=
   mode=$(grep -o -E "(hardware|software) gpu" "$L/render.log" | tail -1 || true)
-  n=$(ffprobe -v error -count_frames -select_streams v -show_entries stream=nb_read_frames -of csv=p=0 "$O")
-  echo "$O: $n of $want frames, $(( SECONDS - s )) s, ${mode:-gpu unknown}, $*"
-  [ "$n" = "$want" ] || { echo "frame count is wrong"; return 1; }
+  t=$(( SECONDS - s ))
   "$PY" "$X/qa.py" "$O" "$P" "${O%.*}-qa" > "$L/qa.txt" 2>&1 || { cat "$L/qa.txt"; return 1; }
+  echo "$O: $(grep -m1 '^frames ' "$L/qa.txt" | cut -d' ' -f2-) frames, $t s, ${mode:-gpu unknown}, $*"
   cp "$L/qa.txt" "${O%.*}-qa/qa.txt"
   grep "^one-frame flashes:" "$L/qa.txt" > "$L/flash.txt"
   grep -E "^(jumps away from cuts|blank or near-blank)" "$L/qa.txt" || true
