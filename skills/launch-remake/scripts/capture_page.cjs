@@ -10,13 +10,16 @@ const puppeteer = (() => {
   throw new Error('puppeteer-core not found: run with NODE_PATH=$(npm root -g) and a global hyperframes, or set PUPPETEER to its path');
 })();
 
-const [url, out, W = '1440', H = '900'] = process.argv.slice(2);
+const VERIFY = process.argv[2] === '--verify';
+const [url, out, W = '1440', H = '900'] = VERIFY ? [null, process.argv[3]] : process.argv.slice(2);
 const CHROME = process.env.CHROME || ['/usr/bin/google-chrome', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'].find((p) => fs.existsSync(p)) || (() => {
   try { return require('child_process').execSync('npx --yes hyperframes@0.9.19 browser path', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim().split('\n').pop(); } catch (e) { return undefined; }
 })();
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const AS = path.join(out, 'assets/cap');
-fs.mkdirSync(AS, { recursive: true });
+if (!VERIFY) fs.mkdirSync(AS, { recursive: true });
+const SEL = 'h1,h2,h3,h4,p,button,a,input,textarea,select,table,thead,tbody,tr,th,td,section,header,nav,footer,form,img,svg,li,[id],[role]';
+const TOL = 4;
 
 function scopeSelectors(css) {
   return css.replace(/[^{}]*[{}]/g, (chunk) => {
@@ -34,9 +37,109 @@ function viewportUnits(css, w, h) {
   });
 }
 
+function sheetUnits(css, w, h) {
+  return css.replace(/[^{}]*[{}]/g, (chunk) => {
+    const cut = chunk.endsWith('{') ? chunk.lastIndexOf(';') + 1 : chunk.length;
+    return viewportUnits(chunk.slice(0, cut), w, h) + chunk.slice(cut);
+  });
+}
+
+function boxesIn(sel, rootSel, max) {
+  const root = rootSel ? document.querySelector(rootSel) : document.body, page = rootSel && document.querySelector('#page');
+  const tag = (x) => (x.hasAttribute('data-cap-shot') ? 'IMG' : x.tagName);
+  const pathOf = (el) => {
+    const parts = [];
+    for (let e = el; e && e !== root; e = e.parentElement) {
+      if (e.id && /^[A-Za-z][\w-]*$/.test(e.id)) { parts.unshift('#' + e.id); break; }
+      const sib = [...e.parentElement.children].filter((x) => tag(x) === tag(e) && !x.hasAttribute('data-cap-drop'));
+      parts.unshift(tag(e).toLowerCase() + (sib.length > 1 ? `:nth-of-type(${sib.indexOf(e) + 1})` : ''));
+    }
+    return parts.join(' > ');
+  };
+  const lay = (el) => {
+    let x = 0, y = 0;
+    for (let e = el; e && e !== page; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; }
+    return [x, y, el.offsetWidth, el.offsetHeight];
+  };
+  const out = [];
+  for (const el of root.querySelectorAll(sel)) {
+    const r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) continue;
+    out.push({ path: pathOf(el), tag: el.tagName.toLowerCase(), cls: typeof el.className === 'string' ? el.className.slice(0, 80) : '', box: [r.x + scrollX, r.y + scrollY, r.width, r.height].map(Math.round), text: (el.innerText || el.getAttribute('placeholder') || '').trim().replace(/\s+/g, ' ').slice(0, 80), ...(page && el instanceof HTMLElement ? { lay: lay(el) } : {}) });
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+async function verify(b, dir) {
+  const meta = JSON.parse(fs.readFileSync(path.join(dir, 'meta.json'), 'utf8')), live = JSON.parse(fs.readFileSync(path.join(dir, 'boxes.json'), 'utf8'));
+  const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  const attrs = (o, cls) => Object.entries({ ...o, class: `${cls} ${o.class || ''}`.trim() }).map(([k, v]) => `${k}="${esc(v)}"`).join(' ');
+  const doc = `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="page.css"><style>html,body{margin:0}#page{position:absolute;left:0;top:0;width:${meta.width}px}#page *{transition:none!important;animation:none!important}#page [data-cap-pos=sticky]{position:relative!important;top:auto!important}#page [data-cap-pos=fixed]{position:absolute!important}</style></head><body><div id="page"><div ${attrs(meta.html_attrs, 'cap-html')}><div ${attrs(meta.body_attrs, 'cap-body')}>${fs.readFileSync(path.join(dir, 'page.html'), 'utf8')}</div></div></div></body></html>`;
+  const TYPES = { '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.avif': 'image/avif', '.svg': 'image/svg+xml', '.woff': 'font/woff', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.otf': 'font/otf' };
+  const root = path.resolve(dir);
+  const server = require('http').createServer((req, res) => {
+    const u = decodeURIComponent(new URL(req.url, 'http://x').pathname), f = path.join(root, u);
+    if (u === '/__verify.html') return res.writeHead(200, { 'content-type': 'text/html' }).end(doc);
+    if (!f.startsWith(root + path.sep) || !fs.existsSync(f) || !fs.statSync(f).isFile()) return res.writeHead(404).end();
+    res.writeHead(200, { 'content-type': TYPES[path.extname(f).toLowerCase()] || 'application/octet-stream' });
+    fs.createReadStream(f).pipe(res);
+  });
+  await new Promise((r) => server.listen(0, '127.0.0.1', r));
+  const g = await b.newPage();
+  await g.setViewport({ width: meta.width, height: meta.height, deviceScaleFactor: 1 });
+  await g.goto(`http://127.0.0.1:${server.address().port}/__verify.html`, { waitUntil: 'domcontentloaded', timeout: 120000 });
+  await g.evaluate(() => Promise.race([new Promise((r) => setTimeout(r, 20000)), (async () => {
+    await document.fonts.ready;
+    await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
+  })()]));
+  const now = await g.evaluate(boxesIn, SEL, '.cap-body', 1e9);
+  const fonts = await g.evaluate(() => {
+    const generic = /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-[a-z-]+|emoji|math|fangsong|-apple-system|blinkmacsystemfont)$/;
+    const bare = (f) => f.trim().replace(/^["']|["']$/g, '').toLowerCase();
+    const declared = new Set([...document.fonts].map((f) => bare(f.family))), other = new Map();
+    const w = document.createTreeWalker(document.querySelector('.cap-body'), NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) {
+      if (!n.data.trim() || !n.parentElement || n.parentElement.closest('script,style')) continue;
+      const fams = getComputedStyle(n.parentElement).fontFamily.split(','), f = fams[0].trim();
+      if (!generic.test(bare(f)) && !fams.some((x) => declared.has(bare(x)))) other.set(f, (other.get(f) || 0) + 1);
+    }
+    return { failed: [...new Set([...document.fonts].filter((f) => f.status === 'error').map((f) => `${f.family} ${f.weight}`))], other: [...other] };
+  });
+  await g.close();
+  server.close();
+  const at = new Map(now.map((x) => [x.path, x]));
+  const name = (x) => `${x.path.split(' > ').slice(-3).join(' > ')}${x.text ? ` "${x.text.slice(0, 40)}"` : ''}`;
+  const outer = (list) => list.filter((x) => !list.some((y) => y !== x && x.path.startsWith(y.path + ' > ')));
+  const gone = live.filter((l) => !at.has(l.path));
+  const changed = live.filter((l) => at.has(l.path) && l.box.some((v, k) => Math.abs(v - at.get(l.path).box[k]) > TOL));
+  const wide = outer(changed.filter((l) => Math.abs(l.box[2] - at.get(l.path).box[2]) > TOL));
+  const moved = outer(changed).filter((l) => !wide.some((w) => l.path === w.path || l.path.startsWith(w.path + ' > ')));
+  const off = (x) => [x.box[0] + x.box[2] / 2 - x.lay[0] - x.lay[2] / 2, x.box[1] + x.box[3] / 2 - x.lay[1] - x.lay[3] / 2].map(Math.round);
+  const drawn = outer(now.filter((x) => x.lay && off(x).some((v) => Math.abs(v) > TOL)));
+  const lines = [`capture check: ${live.length} live boxes, ${live.length - gone.length} found again after a reload of page.html and page.css at ${meta.width} px`];
+  if (gone.length) lines.push(`  ${gone.length} not found or under 2 px: ${gone.slice(0, 5).map(name).join('; ')}`);
+  const list = (head, xs) => {
+    if (!xs.length) return;
+    lines.push(head);
+    xs.sort((a, c) => a.box[1] - c.box[1]).slice(0, 10).forEach((l) => lines.push(`    ${name(l)}: live ${l.box.join(',')} now ${at.get(l.path).box.join(',')}`));
+  };
+  list(`  ${wide.length} changed width by more than ${TOL} px, usually a lost CSS rule: set the width in the spec's page css (x,y,w,h; the live boxes are in boxes.json and page.png)`, wide);
+  list(`  ${moved.length} moved or changed height (a lost scroll position, an animation caught at another moment, or a width change above)`, moved);
+  if (drawn.length) {
+    lines.push(`  ${drawn.length} drawn away from their layout box by a transform (a focus by sel lands on the layout box): focus these by page point`);
+    drawn.sort((a, c) => a.box[1] - c.box[1]).slice(0, 10).forEach((x) => lines.push(`    ${name(x)}: drawn ${x.box.join(',')}, centre off by ${off(x).join(',')} px`));
+  }
+  if (fonts.failed.length) lines.push(`  fonts that fail to load: ${fonts.failed.slice(0, 8).join(', ')}`);
+  if (fonts.other.length) lines.push(`  text set in a named font that the capture does not declare (a local font draws it, so it can change on another machine): ${fonts.other.slice(0, 8).map(([f, n]) => `${f} (${n} runs)`).join(', ')}`);
+  if (lines.length === 1) lines.push('  capture check ok: boxes, transforms and fonts');
+  console.log(lines.join('\n'));
+}
+
 (async () => {
   const noSandbox = process.env.CHROME_NO_SANDBOX === '1' || (process.getuid && process.getuid() === 0);
   const b = await puppeteer.launch({ executablePath: CHROME, headless: 'new', args: [...(noSandbox ? ['--no-sandbox'] : []), '--hide-scrollbars', '--disable-gpu'] });
+  if (VERIFY) { await verify(b, out); return b.close(); }
   const g = await b.newPage();
   await g.setViewport({ width: +W, height: +H, deviceScaleFactor: 1 });
   await g.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
@@ -65,6 +168,21 @@ function viewportUnits(css, w, h) {
     for (const el of document.querySelectorAll('textarea')) el.textContent = el.value;
   });
 
+  const unrolled = await g.evaluate(() => {
+    if (document.body.scrollHeight > innerHeight + 10) return false;
+    let main = null;
+    for (const e of document.querySelectorAll('*')) {
+      if (e.scrollHeight > e.clientHeight + 10 && /(auto|scroll)/.test(getComputedStyle(e).overflowY) && (!main || e.scrollHeight > main.scrollHeight)) main = e;
+    }
+    if (!main) return false;
+    main.scrollTop = 0;
+    main.style.setProperty('height', 'auto', 'important');
+    main.style.setProperty('overflow', 'visible', 'important');
+    window.scrollTo(0, 0);
+    return true;
+  });
+  if (unrolled) await wait(1500);
+
   const media = await g.evaluate(() => {
     let i = 0;
     const out = [];
@@ -89,6 +207,8 @@ function viewportUnits(css, w, h) {
   }
   await soloTag.evaluate((el) => el.remove());
   await g.evaluate(() => window.scrollTo(0, 0));
+  const boxes = await g.evaluate(boxesIn, SEL, null, 5000);
+  await g.screenshot({ path: path.join(out, 'page.png'), fullPage: true });
   await g.evaluate((list) => {
     for (const el of document.querySelectorAll('[data-cap-drop]')) el.remove();
     for (const m of list) {
@@ -107,20 +227,6 @@ function viewportUnits(css, w, h) {
     }
   }, media);
 
-  const unrolled = await g.evaluate(() => {
-    if (document.body.scrollHeight > innerHeight + 10) return false;
-    let main = null;
-    for (const e of document.querySelectorAll('*')) {
-      if (e.scrollHeight > e.clientHeight + 10 && /(auto|scroll)/.test(getComputedStyle(e).overflowY) && (!main || e.scrollHeight > main.scrollHeight)) main = e;
-    }
-    if (!main) return false;
-    main.scrollTop = 0;
-    main.style.setProperty('height', 'auto', 'important');
-    main.style.setProperty('overflow', 'visible', 'important');
-    window.scrollTo(0, 0);
-    return true;
-  });
-  if (unrolled) await wait(1500);
 
   const sheets = await g.evaluate(() => {
     const abs = (text, base) => text.replace(/url\((['"]?)([^'")]+)\1\)/g, (m, q, u) => {
@@ -229,28 +335,7 @@ function viewportUnits(css, w, h) {
     return { html: body.innerHTML, htmlAttrs: attrs(document.documentElement), bodyAttrs: attrs(document.body), title: document.title, fonts, height: document.documentElement.scrollHeight };
   });
 
-  const sel = 'h1,h2,h3,h4,p,button,a,input,textarea,select,table,thead,tbody,tr,th,td,section,header,nav,footer,form,img,svg,li,[id],[role]';
-  const boxes = await g.evaluate((sel) => {
-    const pathOf = (el) => {
-      const parts = [];
-      for (let e = el; e && e !== document.body; e = e.parentElement) {
-        if (e.id && /^[A-Za-z][\w-]*$/.test(e.id)) { parts.unshift('#' + e.id); break; }
-        const sib = [...e.parentElement.children].filter((x) => x.tagName === e.tagName);
-        parts.unshift(e.tagName.toLowerCase() + (sib.length > 1 ? `:nth-of-type(${sib.indexOf(e) + 1})` : ''));
-      }
-      return parts.join(' > ');
-    };
-    const out = [];
-    for (const el of document.body.querySelectorAll(sel)) {
-      const r = el.getBoundingClientRect();
-      if (r.width < 2 || r.height < 2) continue;
-      out.push({ path: pathOf(el), tag: el.tagName.toLowerCase(), cls: typeof el.className === 'string' ? el.className.slice(0, 80) : '', box: [r.x + scrollX, r.y + scrollY, r.width, r.height].map(Math.round), text: (el.innerText || el.getAttribute('placeholder') || '').trim().replace(/\s+/g, ' ').slice(0, 80) });
-      if (out.length >= 5000) break;
-    }
-    return out;
-  }, sel);
-  await g.screenshot({ path: path.join(out, 'page.png'), fullPage: true });
-  await b.close();
+  await g.close();
 
   let css = sheets.map((s) => s.text || '').join('\n');
   let html = page.html;
@@ -285,7 +370,7 @@ function viewportUnits(css, w, h) {
     html = html.split(`"${u}"`).join(`"${p}"`).split(`"${u.replace(/&/g, '&amp;')}"`).join(`"${p}"`).split(`url(&quot;${u}&quot;)`).join(`url(&quot;${p}&quot;)`);
   }
   html = html.split('__CAP__/').join('assets/cap/');
-  css = viewportUnits(scopeSelectors(css), +W, +H);
+  css = sheetUnits(scopeSelectors(css), +W, +H);
   html = html.replace(/(\sstyle=")([^"]*)"/g, (m, a, v) => a + viewportUnits(v, +W, +H) + '"');
 
   fs.writeFileSync(path.join(out, 'page.html'), html);
@@ -295,4 +380,6 @@ function viewportUnits(css, w, h) {
     css_kb: Math.round(css.length / 1024), html_kb: Math.round(html.length / 1024), assets: Object.keys(local).length, failed, unreadable_sheets: sheets.filter((s) => s.err).map((s) => s.href) };
   fs.writeFileSync(path.join(out, 'meta.json'), JSON.stringify(meta, null, 1));
   console.log(JSON.stringify({ title: meta.title, html_kb: meta.html_kb, css_kb: meta.css_kb, assets: meta.assets, failed: failed.length, media: media.length, boxes: boxes.length, fonts: meta.fonts.length, page_height: meta.page_height }));
+  await verify(b, out);
+  await b.close();
 })().catch((e) => { console.error('ERR', e.message); process.exit(1); });
