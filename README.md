@@ -17,6 +17,13 @@ For Claude Code, install the workflow plugin:
 /plugin install avastudio@avastudio
 ```
 
+The `launch-remake` skill builds motion-graphics launch films from a product's
+real page and a measured reference from Ava's launch library. It needs an agent
+with a local filesystem and shell, Chrome, FFmpeg and HyperFrames. Hosted MCP
+access alone does not provide that renderer. The skill includes setup and
+diagnostic scripts; Gemini and direct ElevenLabs keys are optional, and music
+can use existing Ava credits through MCP.
+
 The public [CLI](https://docs.avastudio.com/api-and-mcp/cli) and
 [TypeScript SDK](https://docs.avastudio.com/api-and-mcp/sdk) offer the same
 tools over REST. This repository contains only client guidance, artwork and
@@ -35,7 +42,7 @@ API contract 0.8.3 (2026-10-29), including native carousel image projects.
 Refresh this snapshot from the hosted service before a directory submission
 if its tool catalog has changed.
 
-Validate and build the OpenAI upload ZIP with Node.js 22+ and `zip`:
+Validate and build the OpenAI upload ZIP with Node.js 22+, Python 3 and `zip`:
 
 ```bash
 npm test

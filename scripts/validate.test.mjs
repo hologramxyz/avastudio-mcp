@@ -9,6 +9,8 @@ test('all listing formats use the production endpoint without embedded credentia
   const plugin = json('plugin.json');
   assert.equal(plugin.name, json('.claude-plugin/plugin.json').name);
   assert.equal(plugin.version, json('server.json').version);
+  assert.equal(plugin.version, json('.claude-plugin/plugin.json').version);
+  assert.equal(plugin.version, json('package.json').version);
   assert.equal(json('mcp.json').mcpServers.ava.url, endpoint);
   assert.equal(json('.mcp.json').mcpServers.ava.url, endpoint);
   assert.equal(json('server.json').remotes[0].url, endpoint);
@@ -55,9 +57,22 @@ test('public files exclude credentials, server implementation and unrelated pack
       if (entry.name === '.git' || entry.name === 'dist') continue;
       const name = `${path}/${entry.name}`;
       if (entry.isDirectory()) walk(name);
-      else if (entry.name.endsWith('.json') || entry.name.endsWith('.md')) assert(!forbidden.test(readFileSync(name, 'utf8')), `Credential in ${name}`);
+      else if (/\.(json|md|py|sh|js|cjs|mjs)$/.test(entry.name)) assert(!forbidden.test(readFileSync(name, 'utf8')), `Credential in ${name}`);
     }
   };
   walk('.');
   for (const path of ['src', 'packages', '.env', 'key.pem']) assert(!existsSync(path));
+});
+
+test('bundled skills have discoverable names and supported descriptions', () => {
+  for (const entry of readdirSync('skills', { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const file = `skills/${entry.name}/SKILL.md`;
+    const source = readFileSync(file, 'utf8');
+    const frontmatter = source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)?.[1];
+    assert(frontmatter, `Missing skill frontmatter: ${file}`);
+    assert.equal(frontmatter.match(/^name:\s*(.+)$/m)?.[1].trim(), entry.name);
+    const description = frontmatter.match(/^description:\s*(.+)$/m)?.[1].trim();
+    assert(description && description.length <= 1024 && !/[<>]/.test(description), `Invalid skill description: ${file}`);
+  }
 });
