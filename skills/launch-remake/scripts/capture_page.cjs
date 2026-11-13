@@ -35,7 +35,8 @@ function viewportUnits(css, w, h) {
 }
 
 (async () => {
-  const b = await puppeteer.launch({ executablePath: CHROME, headless: 'new', args: ['--no-sandbox', '--hide-scrollbars', '--disable-gpu'] });
+  const noSandbox = process.env.CHROME_NO_SANDBOX === '1' || (process.getuid && process.getuid() === 0);
+  const b = await puppeteer.launch({ executablePath: CHROME, headless: 'new', args: [...(noSandbox ? ['--no-sandbox'] : []), '--hide-scrollbars', '--disable-gpu'] });
   const g = await b.newPage();
   await g.setViewport({ width: +W, height: +H, deviceScaleFactor: 1 });
   await g.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });

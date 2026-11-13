@@ -37,7 +37,8 @@ const server = require('http').createServer((req, res) => {
 
 (async () => {
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
-  const b = await puppeteer.launch({ executablePath: CHROME, headless: 'new', args: process.getuid && process.getuid() === 0 ? ['--no-sandbox'] : [] });
+  const noSandbox = process.env.CHROME_NO_SANDBOX === '1' || (process.getuid && process.getuid() === 0);
+  const b = await puppeteer.launch({ executablePath: CHROME, headless: 'new', args: noSandbox ? ['--no-sandbox'] : [] });
   const g = await b.newPage();
   const errors = [];
   g.on('pageerror', (e) => errors.push(String(e.message || e).slice(0, 300)));
