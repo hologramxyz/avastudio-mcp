@@ -9,6 +9,7 @@ for p in "${PY:-}" "$HOME/.launch-remake/venv/bin/python" "$HOME/venv/bin/python
 "$PY" -c "import cv2, numpy" 2>/dev/null || { echo "$PY has no numpy or OpenCV: run doctor.sh"; exit 1; }
 grep -q "<video" "$P"/compositions/*.html && export PRODUCER_FORCE_SCREENSHOT=true
 export HYPERFRAMES_RENDER_LOCK=off HYPERFRAMES_RENDER_DETACHED=1
+export HYPERFRAMES_EXTRACT_CACHE_DIR=${HYPERFRAMES_EXTRACT_CACHE_DIR:-$P/.hf-cache}
 L=$(mktemp -d)
 CH=
 trap 'rm -rf "$L"' EXIT

@@ -135,6 +135,7 @@ Run from a work folder that holds `refs/`, `page/`, `film/` and `out/`. `X` is t
     - Send the film and the side by side with its credit line.
     - Send `SPEC.md` with the hero, the reference and its fit, both verdicts as the scripts printed them, the frame-read mismatches, what you rejected, and the cost from the job receipts.
     - Write `STATE.md` for the next round: the paths (page, reference, spec, film, music), the last verdicts, what is approved, what is open, and the receipts. A notes round starts a fresh session from `STATE.md`, `spec.json` and the notes. Do not resume the long build session: it reads its whole history again on every turn.
+    - Delete `film/*/.hf-cache`: the page-video frames HyperFrames extracted for the renders, about 1.5 GB for a 15 s film. A new render extracts them again.
     - Then stop for the person's call.
 
 ## The gate

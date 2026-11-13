@@ -21,5 +21,5 @@ case "$(uname -s)" in
   Linux) nvidia-smi -L >/dev/null 2>&1 && echo "gpu: NVIDIA (render.sh checks it on the first render)" || echo "gpu: none, renders use SwiftShader on the CPU and take several times longer" ;;
 esac
 free=$(df -Pk . | awk 'NR==2{print int($4/1048576)}')
-[ "$free" -ge 8 ] && echo "disk: $free GB free" || need "8 GB free disk here (a delivery render keeps about 2.3 MB per frame while it runs); $free GB free"
+[ "$free" -ge 8 ] && echo "disk: $free GB free" || need "8 GB free disk here (a render extracts every page video into frames, about 1.5 GB for a 15 s film, kept in film/<name>/.hf-cache until delivery); $free GB free"
 exit $bad
