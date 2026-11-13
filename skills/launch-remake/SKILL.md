@@ -1,11 +1,13 @@
 ---
 name: launch-remake
-description: Make a launch video for a product by remaking a viral launch film's cuts, camera, depth, text reveals and sound, built in HyperFrames from that product's real page. Capture the product first, pick the reference that its material can fill, measure the reference, write a film spec, check it, render, score the render against the reference, then deliver it side by side. Use when someone asks for a launch video or a product launch film (such as "make a launch video for <url>"), a launch video "in the style of" a reference film, or the mograph_rebuild path of Ava's launch style library.
+description: Make a launch video for a product by remaking a viral launch film's cuts, camera, depth, text reveals and sound, built in HyperFrames from that product's real page. Capture the product first, pick the reference that its material can fill, measure the reference, write a film spec, check it, render, score the render against the reference, then deliver it side by side. Use when someone asks for a launch video or a product launch film for a product URL, a launch video "in the style of" a reference film, or the mograph_rebuild path of Ava's launch style library. Requires a local filesystem and shell with Chrome, FFmpeg and HyperFrames.
 ---
 
 # Launch remake
 
 The film moves like the reference: the same cut rhythm, camera speeds, depth, reveals and sound. On screen is the new product's real page, copy and prices, and the product fills most of the film. Motion that copies the reference well but barely shows the product is a failed film.
+
+Check execution capabilities before starting: this workflow needs a writable work folder and a shell that can run the bundled scripts, Chrome, FFmpeg and HyperFrames. A hosted MCP connection alone does not provide them. If the client cannot run them, offer a local-agent handoff with the reference and product brief. Ask before substituting a Studio-supported video; do not spend on music or create an empty project for a local remake the client cannot render.
 
 Read `references/hyperframes-gotchas.md` and `references/qa.md` first. They hold the render traps and Gemini's known false claims. This skill adds the remake method on top of them.
 
@@ -42,7 +44,7 @@ Run from a work folder that holds `refs/`, `page/`, `film/` and `out/`. `X` is t
    - Run `bash $X/doctor.sh`. If it reports a missing tool, run `bash $X/setup_mac.sh` on a Mac or `bash $X/setup_linux.sh` on a fresh Debian or Ubuntu VM, then run the doctor again. Use the `PY` it prints for every Python step.
    - Check your Ava tools. You need `launch_style_list`, `launch_style_get`, `brand_get`, `library_upload_url`, `audio_generate` and `jobs_get`. If `library_upload_url` or `audio_generate` is missing, the connection is Read only. With Sign in with Ava, ask the person to connect again (`/mcp`) and keep Full access or choose Custom with Produce media. With an API key, ask them to set the key to Custom in Ava Studio > Settings > Developers, with Account, Read brands, Read campaigns and Produce media (and Edit brands to create a brand). If `launch_style_list` itself is missing, call `whoami`: if the connection lacks Read campaigns, connect again with it; otherwise the Ava server is older than the skill, so say so and stop.
    - A `GEMINI_API_KEY` is optional. Without it, read the frames yourself.
-   - Call `whoami`. The opening's music is 1 track, about 18 credits (held at the 30 s price). New accounts get 500 starter credits after their first brand.
+   - Call `whoami`. The opening's music is 1 track, about 18 credits (held at the 30 s price). Eligible new accounts can receive 500 starter credits after their first brand; use the returned balance and starter status rather than assuming a grant.
    - If you do not have the product page or the aspect ratio, ask for them now. They are the only questions before the capture. With no stops, use 16:9.
 2. **Capture the product and decide the hero.**
    - Capture: `NODE_PATH=$(npm root -g) node $X/capture_page.cjs <url> page 1440 900`. For a film on a phone, capture at the phone's width (`references/spec.md`, "device"). It writes `page.html` and `page.css` (frozen as captured: entrance animations finished, media queries resolved, viewport units turned into pixels), `assets/`, `page.png` (the full page) and `boxes.json` (the page-pixel box of every heading, button, field, table cell and element with an id).

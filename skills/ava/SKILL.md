@@ -31,9 +31,14 @@ goal, reference links and supplied assets into the selected workflow.
   Use a video project only when a video is explicitly requested.
 - **The user asks for a launch video** (a product launch film, or a remake of
   a launch from Ava's library): pick the reference with `launch_style_list` and
-  `launch_style_get`, then build and render the film locally with the
-  `launch-remake` skill, not with Studio's `project_ask`. Only an
-  `avatar_clone` style goes to `project_create` / `project_ask`.
+  `launch_style_get`. For a `mograph_rebuild`, use `launch-remake` when this
+  client has a writable filesystem and shell that can run Chrome, FFmpeg and
+  HyperFrames. Check that capability before setup, uploads or paid music calls.
+  If it is unavailable, explain that the exact motion-graphics remake needs a
+  local agent such as Claude Code or Codex. Offer a handoff with the selected
+  reference, or a Studio-supported video alternative with the user's approval;
+  do not claim `project_ask` produces the same remake. An `avatar_clone` style
+  uses `project_create` / `project_ask` as usual.
 - **The user asks for one complete original video or video clone:** use
   `project_create` / `project_list`, then `project_ask`, Studio's content-planning
   agent. Pass the full brief and assets. For planning only, use `generate:false`
