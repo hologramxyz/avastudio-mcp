@@ -47,7 +47,13 @@ Run from a work folder that holds `refs/`, `page/`, `film/` and `out/`. `X` is t
    - Call `whoami`. The opening's music is 1 track, about 18 credits (held at the 30 s price). Eligible new accounts can receive 500 starter credits after their first brand; use the returned balance and starter status rather than assuming a grant.
    - If you do not have the product page or the aspect ratio, ask for them now. They are the only questions before the capture. With no stops, use 16:9.
 2. **Capture the product and decide the hero.**
-   - Capture: `NODE_PATH=$(npm root -g) node $X/capture_page.cjs <url> page 1440 900`. For a film on a phone, capture at the phone's width (`references/spec.md`, "device"). It writes `page.html` and `page.css` (frozen as captured: entrance animations finished, media queries resolved, viewport units turned into pixels), `assets/`, `page.png` (the full page) and `boxes.json` (the page-pixel box of every heading, button, field, table cell and element with an id).
+   - Capture: `NODE_PATH=$(npm root -g) node $X/capture_page.cjs <url> page 1440 900`. For a film on a phone, capture at the phone's width (`references/spec.md`, "device"). It writes `page.html` and `page.css` (frozen as captured: entrance animations finished, media queries resolved, viewport units turned into pixels), `assets/`, `page.png` (the full live page, before its videos and canvases become stills) and `boxes.json` (the page-pixel box of every heading, button, field, table cell and element with an id, taken at the same time).
+   - The capture ends with a reload check (`capture check:`). It loads `page.html` and `page.css` again at the same width, as the film will, and lists:
+     - boxes whose width changed against `boxes.json`: usually a lost CSS rule; set the width in the spec's page `css`
+     - boxes that moved or changed height: a lost scroll position, a live animation, or a width change above
+     - elements that a transform draws away from their layout box: a focus by `sel` lands on the layout box, so focus these by a page point from `boxes.json`
+     - fonts that fail, and text set in a named font that the capture does not declare (a local font draws it)
+   - Read it before you plan. `node $X/capture_page.cjs --verify page` runs it again on a capture.
    - Write `film/material.md`: one row for each thing the film could show. Give its type (UI screen, screen recording, output media, photo, logo, number, copy), its pixel size, its length and whether it moves, its owner (the product's own or a third party), and whether it shows the product working.
    - Decide the hero, the thing that shows the product best:
      - software with a UI: one real task done on screen, from start to result
@@ -75,6 +81,9 @@ Run from a work folder that holds `refs/`, `page/`, `film/` and `out/`. `X` is t
    - To see exact frames: `python $X/measure_ref.py refs/<ref>/source.mp4 refs/<ref> --grab 3.29,3.33,3.38`. It writes labelled stills and `sheet.jpg` to `refs/<ref>/grab/` in about 1 s, and does not measure again.
 6. **Read the look (optional, 1 Gemini call).** Make a 720p proxy, then run `python $X/gemini_review.py proxy.mp4 $X/../prompts/ref-read.md 10`. Without a key, answer `$X/../prompts/ref-read.md` yourself from `sheet.jpg` and the shot images. Use it for look words only: colours, how text arrives, type, light. Check every count, time and sound claim against `ref.json`.
 7. **Plan the opening.**
+   - **Two traps:**
+     - `measure_ref.py` and `compare.py` count a pixel as changed only above 24 grey levels. Motion on a dark UI (a dark panel on a dark canvas) can read as still. If such a shot gets `STILL`, look at its frames before you change its design.
+     - An entrance that fades from opacity 0 exactly at a cut shows an empty frame at the cut, and `qa.py` lists it as a flash. Start the element visible at the cut, or start its fade before the cut. A new render cannot fix it.
    - **The opening is a condensed cut, not the reference's first 15 s.** Take a hook, then the reference's strongest windows that can show the product, from anywhere in the film, then the end line. Keep each window's own motion and the uneven cut rhythm. Keep the reference's order unless it leaves the product off screen.
    - **Plan the product time.** Give each shot a `subject`: `product`, `proof`, `brand` or `other`, with the element that shows it. Product shots fill at least half of the film, and the first one starts by 3 s.
    - Show three things: the one message, the hero, and one proof (a number, a table, a result).
@@ -177,7 +186,7 @@ Add a move only when a film needs it, and keep the moves that films repeat.
 ## Files
 
 - `scripts/measure_ref.py`: cuts, windows, camera, focus, palette, stillness and sound of any film. `--grab` writes exact stills.
-- `scripts/capture_page.cjs`: freezes a live page into markup, CSS and local assets.
+- `scripts/capture_page.cjs`: freezes a live page into markup, CSS and local assets, then checks the capture against the live page. `--verify <dir>` runs the check again.
 - `scripts/build.py` and `scripts/runtime.js`: turn the spec and the page into a HyperFrames project. `--fps` builds a draft at another frame rate.
 - `scripts/check.cjs`: checks a built film before any render: targets, images, fonts, product time, text size, edges and sharpness.
 - `scripts/render.sh`: one render on the GPU when there is one, the frame count, `qa.py`, and safer retries on flashes. The fourth argument is the quality (`draft` or `delivery`).
