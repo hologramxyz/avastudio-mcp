@@ -20,6 +20,21 @@ const inner = src.slice(src.indexOf('<template>') + 10, src.lastIndexOf('</templ
 const mk = '<script>\n(function () {\n  const D = ', at = src.indexOf(mk) + mk.length;
 const D = JSON.parse(src.slice(at, src.indexOf(';\n', at)));
 const [W, H] = D.size;
+const storyFile = path.join(path.dirname(proj), 'STORY.md');
+const cells = (l) => l.trim().replace(/^\|/, '').replace(/(?<!\\)\|$/, '').split(/(?<!\\)\|/).map((c) => c.trim());
+const kept = (() => {
+  if (!fs.existsSync(storyFile)) return null;
+  const [head = [], ...rows] = fs.readFileSync(storyFile, 'utf8').split('\n').filter((l) => /^\s*\|/.test(l) && !/^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/.test(l)).map(cells);
+  const col = (re, d) => { const j = head.findIndex((c) => re.test(c)); return j < 0 ? d : j; };
+  const num = col(/^(#|no\.?|row|beat)$/i, -1);
+  return new Set(rows.filter((r) => !r.some((c) => /^[`*_\s]*(dropped|merged)\b/i.test(c))).map((r) => (num < 0 ? rows.indexOf(r) + 1 : parseInt(r[num], 10))));
+})();
+const beats = kept ? D.shots.flatMap((s, i) => {
+  if (s.t1 <= D.win[0] || s.t0 >= D.win[1]) return [];
+  const n = Number(((typeof s.beat === 'string' ? s.beat.trim() : '').match(/^(\d+)\s*:\s*\S/) || [])[1]);
+  if (!n) return [`shot ${i}: beat ${JSON.stringify(s.beat ?? null).slice(0, 40)} is not a STORY.md row; write its row number and a few words, such as "3: you pick a mode"`];
+  return kept.has(n) ? [] : [`shot ${i}: beat ${n} is not a kept row of STORY.md`];
+}) : [`no STORY.md next to ${path.basename(proj)}; map the story before you plan the shots`];
 const harness = `<!doctype html><html><head><meta charset="utf-8">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <style>html,body{margin:0;background:#000;overflow:hidden}#root{position:relative;width:${W}px;height:${H}px;overflow:hidden}
@@ -297,7 +312,7 @@ const server = require('http').createServer((req, res) => {
   console.log(res.table.join('\n'));
   console.log(res.summary);
   if (res.notes.length) console.log(res.notes.map((n) => 'note: ' + n).join('\n'));
-  const all = [...errors.map((e) => 'page error: ' + e), ...lost.map((v) => 'video file missing: ' + v), ...res.out];
+  const all = [...errors.map((e) => 'page error: ' + e), ...lost.map((v) => 'video file missing: ' + v), ...beats, ...res.out];
   console.log(all.length ? all.join('\n') : `check ok: page, images, fonts, shot targets, ${res.full ? 'product time, ' : ''}text size, edges and sharpness`);
   await b.close();
   server.close();

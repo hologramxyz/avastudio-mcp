@@ -1,11 +1,11 @@
 ---
 name: launch-remake
-description: Make a launch video for a product by remaking a viral launch film's cuts, camera, depth, text reveals and sound, built in HyperFrames from that product's real page. Capture the product first, pick the reference that its material can fill, measure the reference, write a film spec, check it, render, score the render against the reference, then deliver it side by side. Use when someone asks for a launch video or a product launch film for a product URL, a launch video "in the style of" a reference film, or the mograph_rebuild path of Ava's launch style library. Requires a local filesystem and shell with Chrome, FFmpeg and HyperFrames.
+description: Make a launch video for a product by remaking a viral launch film's cuts, camera, depth, text reveals and sound, built in HyperFrames from that product's real page. Capture the product first, pick the reference that its material can fill, measure the reference, map its story to the product's own steps, write a film spec, check it, render, score the render against the reference, then deliver it side by side. Use when someone asks for a launch video or a product launch film for a product URL, a launch video "in the style of" a reference film, or the mograph_rebuild path of Ava's launch style library. Requires a local filesystem and shell with Chrome, FFmpeg and HyperFrames.
 ---
 
 # Launch remake
 
-The film moves like the reference: the same cut rhythm, camera speeds, depth, reveals and sound. On screen is the new product's real page, copy and prices, and the product fills most of the film. Motion that copies the reference well but barely shows the product is a failed film.
+The film tells the reference's story with this product's own steps, and moves like the reference: the same cut rhythm, camera speeds, depth, reveals and sound. On screen is the new product's real page, copy and prices, and the product fills most of the film. Motion that copies the reference well but barely shows the product is a failed film.
 
 Check execution capabilities before starting: this workflow needs a writable work folder and a shell that can run the bundled scripts, Chrome, FFmpeg and HyperFrames. A hosted MCP connection alone does not provide them. If the client cannot run them, offer a local-agent handoff with the reference and product brief. Ask before substituting a Studio-supported video; do not spend on music or create an empty project for a local remake the client cannot render.
 
@@ -17,6 +17,7 @@ Read `references/hyperframes-gotchas.md` and `references/qa.md` first. They hold
 - **Product truth.** Capture the product's page. Take every number and line of copy from its source code or live page. Never draw a fake UI, invent a number or make a stand-in for the product. Pills, chips, cards and lists show the product's real content (features, plans, results), never nav links, footer links or legal text.
 - **Product share.** The product (its real UI in use, its real output, or the product itself) fills at least 25% of the frame for at least half of the film, and first does so by 3 s. `check.cjs` measures this. Titles, stats, step cards and headlines are short beats between product shots.
 - **Copy the structure, not the content.** Keep the reference's structure, pacing and look. Never copy its product, people, claims or words.
+- **Copy the story's beats.** A launch film tells a few beats in order, for example: you type a task, it plans the work, you pick an option, you get the result. Tell the same kind of beats, in the same order, with this product's real flow (`STORY.md`, step 5). Good motion with no beat behind it is a failed film.
 - **Third-party material.** Footage, posters and logos of other companies on the product page are not the product's own. They cannot be the hero or the payoff without the person's OK.
 - **Credit the reference** in every side by side.
 - **The sound is a style match.** Video-to-music uses the reference's audio as its style input, so the person must clear it before anyone posts.
@@ -26,15 +27,16 @@ Read `references/hyperframes-gotchas.md` and `references/qa.md` first. They hold
   - Keys come only from the environment (`GEMINI_API_KEY`, `ELEVEN_LABS_API_KEY`). Never print them.
   - With no ElevenLabs key, make the music through Ava (`audio_generate`, `references/sound.md`). With no Gemini key, do the Gemini steps yourself from the frames and the numbers.
 - **Opening first.** Build a 9–15 s opening and wait for the person's OK. Then build the full film.
-- **Ask once, then work.** Put every question in one message (step 4). If the person asked for no stops, decide yourself and say what you chose in the delivery.
+- **Ask once, then work.** Put every question in one message (step 6). If the person asked for no stops, decide yourself and say what you chose in the delivery.
 - **Say where you are.** At each new step, say the step and the time since the start. Say a file is ready only after it exists and has the right frame count.
 - **Scripts give the verdicts.** `check.cjs` (product and quality) and `compare.py` (motion match) print their verdict and exit non-zero on a failure. Never report a pass that a script did not print.
+- **Two required gates.** The motion gate (`compare.py`) and the story gate (step 11: a fresh frame read lists the kept beats of `STORY.md` in order). A film that passes one and fails the other is not done.
 
 ## Inputs
 
 - **The product page:** the URL of the running page. A local dev server works.
 - **The reference video,** if the person names one: the `video_url` from `launch_style_get`, or a file. Also keep its title and `post_url` for the credit.
-- **The film's words:** the one message, the claim, the CTA, and the source of every number.
+- **The film's words:** the one message, the claim, the CTA, and the source of every number. If the person has none, the story map proposes them (step 5).
 
 ## Process
 
@@ -61,14 +63,13 @@ Run from a work folder that holds `refs/`, `page/`, `film/` and `out/`. `X` is t
      - a physical product: the product itself in real photos or footage
      - a service or an API: the result the customer gets (a real response, a real number), shown large
    - The hero's shots are `product` shots. `proof` is a second fact, such as a number.
-   - Rate the hero material: its pixel size against the frame (it goes soft past about 1.5 times its pixels), how much it holds, whether it moves, and its owner. If it is weak (small, sparse, one asset only, or a third party's), say so in step 4 and ask for better material. With no stops, say so first in the delivery.
+   - Rate the hero material: its pixel size against the frame (it goes soft past about 1.5 times its pixels), how much it holds, whether it moves, and its owner. If it is weak (small, sparse, one asset only, or a third party's), say so in step 6 and ask for better material. With no stops, say so first in the delivery.
 3. **Choose the reference by fit.**
    - If the person named a reference, still do this step for it, and state its gaps before you build.
    - Otherwise list candidates with `launch_style_list` (`mograph_rebuild`, the film's aspect ratio). For the best 3–5, read the summary and look at the poster or a 1 fps sheet. Write what each part of the film shows (UI close-up, full-frame media, many tiles, live action, type only, logo) and for how many seconds.
    - Fit is the share of those seconds that your material can fill with real assets of enough size. A reference that is mostly type, logo or live action leaves little room for the product.
    - Pick the best fit. Keep the next two as swaps, each with its fit and its unfilled parts.
-4. **Ask once.** In one message, ask for the one message and the CTA, opening only or full film, and a spend limit. Show the hero and its rating, the reference (poster, credit, `post_url`, fit, the parts the material cannot fill) and the two swaps, and any third-party material you want to use. State both costs: about 18 Ava credits for the opening's music, and your own usage (see "Cost per opening").
-5. **Get and measure the reference.**
+4. **Get and measure the reference.**
    - `curl -L -o refs/<ref>/source.mp4 "<video_url>"`, then `python $X/measure_ref.py refs/<ref>/source.mp4 refs/<ref>`.
    - `ref.json` holds:
      - the cuts, and the layout jumps. In a layout jump, the whole UI shifts at once (a card grows a line) but the flow still tracks it, so it is not a cut.
@@ -79,27 +80,40 @@ Run from a work folder that holds `refs/`, `page/`, `film/` and `out/`. `X` is t
    - `sheet.jpg` shows 1 frame per second. `shots/sNN.jpg` and `windows/wNN.jpg` show the start, middle and end of each shot and each window, with times.
    - Look at every shot and window image before you plan. If a window starts and ends on different content, the measure missed a dissolve or a swap there. Split that window by hand.
    - To see exact frames: `python $X/measure_ref.py refs/<ref>/source.mp4 refs/<ref> --grab 3.29,3.33,3.38`. It writes labelled stills and `sheet.jpg` to `refs/<ref>/grab/` in about 1 s, and does not measure again.
-6. **Read the look (optional, 1 Gemini call).** Make a 720p proxy, then run `python $X/gemini_review.py proxy.mp4 $X/../prompts/ref-read.md 10`. Without a key, answer `$X/../prompts/ref-read.md` yourself from `sheet.jpg` and the shot images. Use it for look words only: colours, how text arrives, type, light. Check every count, time and sound claim against `ref.json`.
-7. **Plan the opening.**
+5. **Map the story.** Before you plan any shot, write `film/STORY.md`: one table row for each beat of the reference, in order.
+   - **The reference's beat:** its seconds and length, its kind (`name`, `problem`, `step`, `result`, `proof` or `cta`) and what it says, in a few words. Read it off `sheet.jpg` and the shot and window images. A beat is one window or a few.
+   - **This product's beat:** the beat of the same kind from this product's real flow: what it says, and the real material that shows it (a page element, a recording and its seconds, a `brand_get` field, a real output). If the account has a brand for this product, read it with `brand_get` and use its logo, colours, products and media.
+   - A `proof` beat names its number and where the number comes from (the page's copy, its code, a real result). A number seen only inside a demo recording is demo data: it can show as part of the UI, never as the proof.
+   - A beat with no real material: merge it into the next beat or drop it, write `merged` or `dropped` at the start of its "Product says" cell, and say so. Never fill a beat with footage that does not show that step, such as other companies' ads.
+   - If the person gave no message, claim or CTA, the map proposes them from the page.
+   - A row looks like this:
+
+     | Reference | Kind | Reference says | Product says | Real material |
+     |---|---|---|---|---|
+     | 1.9–4.2 s (2.3 s) | step | the user picks a mode | you pick Image | the tab row, `#tabs` |
+6. **Ask once.** In one message, ask for the one message and the CTA, opening only or full film, and a spend limit. Show the hero and its rating, the reference (poster, credit, `post_url`, fit, the parts the material cannot fill) and the two swaps, and any third-party material you want to use. Put the story map from `STORY.md` next to the reference's poster, one line per beat written out in the message (a path to `STORY.md` is not enough), so the person can change the story before you build. State both costs: about 18 Ava credits for the opening's music, and your own usage (see "Cost per opening"). If the person picks a swap, measure and map it (steps 4 and 5) before you plan. With no stops, write the same lines in the delivery instead.
+7. **Read the look (optional, 1 Gemini call).** Make a 720p proxy, then run `python $X/gemini_review.py proxy.mp4 $X/../prompts/ref-read.md 10`. Without a key, answer `$X/../prompts/ref-read.md` yourself from `sheet.jpg` and the shot images. Use it for look words only: colours, how text arrives, type, light. Check every count, time and sound claim against `ref.json`.
+8. **Plan the opening.**
    - **Two traps:**
      - `measure_ref.py` and `compare.py` count a pixel as changed only above 24 grey levels. Motion on a dark UI (a dark panel on a dark canvas) can read as still. If such a shot gets `STILL`, look at its frames before you change its design.
      - An entrance that fades from opacity 0 exactly at a cut shows an empty frame at the cut, and `qa.py` lists it as a flash. Start the element visible at the cut, or start its fade before the cut. A new render cannot fix it.
-   - **The opening is a condensed cut, not the reference's first 15 s.** Take a hook, then the reference's strongest windows that can show the product, from anywhere in the film, then the end line. Keep each window's own motion and the uneven cut rhythm. Keep the reference's order unless it leaves the product off screen.
+   - **Plan from `STORY.md`.** Each shot tells one beat, in the map's order, and names it in its `beat` field.
+   - **The opening is a condensed cut, not the reference's first 15 s.** Take a hook, then the reference's windows that tell the beats of `STORY.md`, in story order, from anywhere in the film, then the end line. Keep each window's own motion and the uneven cut rhythm.
    - **Plan the product time.** Give each shot a `subject`: `product`, `proof`, `brand` or `other`, with the element that shows it. Product shots fill at least half of the film, and the first one starts by 3 s.
-   - Show three things: the one message, the hero, and one proof (a number, a table, a result).
+   - Show three things: the one message, the hero, and one proof (a number, a table, a result). The beats carry them.
    - Show output as finished work: a finished piece playing, never a loading or progress state.
-   - Map the reference's moving subject to a moving real asset of the product: footage to its real videos, flying objects to its real thumbnails or cards, particles to its real tiles or UI parts. A shot that holds a still card where the reference moves is a slideshow.
-   - **A shot with no real material:** use another reference window that the material fits. If none fits, drop the shot and retime. If several shots have no material, go back to step 3 and change the reference. Never fill the gap with a drawn or generated stand-in for the product.
+   - Map the reference's moving subject to a moving real asset of the product that shows the same beat: footage to its real videos, flying objects to its real thumbnails or cards, particles to its real tiles or UI parts. A shot that holds a still card where the reference moves is a slideshow.
+   - **A shot with no real material:** use another reference window that the material fits. If none fits, drop the shot, mark its beat `dropped` in `STORY.md`, and retime. If several shots have no material, go back to step 3 and change the reference. Never fill the gap with a drawn or generated stand-in for the product.
    - End on the product's line.
-   - Start the music now (step 11). It needs only the reference's audio and the film's length, and Ava's video-to-music takes about 10 minutes.
-8. **Write the spec.**
+   - Start the music now (step 12). It needs only the reference's audio and the film's length, and Ava's video-to-music takes about 10 minutes.
+9. **Write the spec.**
    - `film/spec.json` is the machine version (`references/spec.md`). Start from `$X/../templates/spec.json` and set every value from your own plan and measurements.
-   - `film/SPEC.md` is the human version: the hero, the reference and its fit, and each shot with its reference window, subject, measured numbers and the real data it uses.
-9. **Build and check, before any render.**
+   - `film/SPEC.md` is the human version: the hero, the reference and its fit, and each shot with its reference window, its `STORY.md` beat, subject, measured numbers and the real data it uses.
+10. **Build and check, before any render.**
    - Build: `python $X/build.py film/spec.json page film/<name>`.
    - Check: `NODE_PATH=$(npm root -g) node $X/check.cjs film/<name>`. It prints each shot's subject size, biggest text and media count, then the product time. It fails on:
      - a shot target or subject that is missing, hidden or off screen; images or video files that do not load; fonts that fail
-     - a shot with no `subject`
+     - a shot with no `subject`, or a `beat` that is not a kept row of `film/STORY.md`
      - product time under half of the film, or the first product shot later than 3 s. A `product` subject counts while it is visible at 25% of the frame or more, or spans 80% of the frame's height or width at 10% of its area or more (a phone or a bottle in a wide frame)
      - focus text under 2.5% of the frame height (too small on a phone), or a `proof` subject's text under it when the focus is a page point
      - a subject that is not visible, or is covered by an opaque title or the end card
@@ -108,7 +122,7 @@ Run from a work folder that holds `refs/`, `page/`, `film/` and `out/`. `X` is t
    - Lines that start with `note:` are for you to judge, such as readable text cut by the frame edge.
    - Lint: `(cd film/<name> && npx hyperframes lint)` (0 errors).
    - Look: `(cd film/<name> && npx hyperframes snapshot --no-end --at <mid of each shot, each event>)`. Fix framing in the spec, rebuild and check again, until every still frames the right thing.
-10. **Draft render, motion match and frame read.**
+11. **Draft render, motion match and story read.**
     - Drafts run at 30 fps, which halves the frames: `python $X/build.py film/spec.json page film/<name>-d --fps 30`, then `bash $X/render.sh film/<name>-d out/<name>-d.mp4 "" draft`. Run it in the foreground with a 10-minute tool timeout. It checks the frame count and runs `qa.py`.
     - Measure: `python $X/measure_ref.py out/<name>-d.mp4 out/<name>-d-m`. Compare: `python $X/compare.py refs/<ref> out/<name>-d-m film/spec.json`. It takes the frame rate from the render, sets each shot against its `ref_window` or `ref` shot, then prints `motion match: pass` or `motion match: FAIL` with the reasons.
     - It fails on:
@@ -119,21 +133,21 @@ Run from a work folder that holds `refs/`, `page/`, `film/` and `out/`. `X` is t
     - Its hints (`less fill`, `smaller text`) come from pixels and can be wrong. Check them on the frames; the text floor in `check.cjs` is the rule.
     - **Fix only the shots that miss.** Change the spec, then rebuild only those shots as a window from the cut before them to the cut after them: `python $X/build.py film/spec.json page film/<name>-dw --window <a>,<b> --fps 30`. Render it, measure it and compare with `--window <a>,<b>`. When it matches, put it into the draft: `python $X/splice.py out/<name>-d.mp4 out/<name>-dw.mp4 film/<name>-dw out/<name>-d.mp4`. After any splice, run `python $X/qa.py` on the complete film and look at the frames around each splice point before you go on.
     - Stop after 3 rounds.
-    - **Frame read, while a fix round is left.** Write the frames into a new folder for each round: `rm -rf out/read-<round> && mkdir -p out/read-<round> && ffmpeg -i out/<name>-d.mp4 -vf "select='not(mod(n\,15))',setpts=N/(2*TB)" -r 2 -q:v 3 out/read-<round>/f%03d.jpg`. The draft is 30 fps, so frame N is at exactly (N − 1) × 0.5 s. Start a fresh agent with no build context. Give it only the `out/read-<round>` folder and `$X/../prompts/frame-read.md`, never the spec or your notes. Compare its notes with the shot table in `SPEC.md`. Each mismatch is a fault: a `product` shot it does not read as the product, a payoff that reads as a loading state, text cut by the edge, a blank. Fix it, or list it in the delivery. If you cannot start a fresh agent, write what each frame shows before you open `SPEC.md` again, then compare.
-11. **Make the sound** (`references/sound.md`). One track for the opening: video-to-music from the reference's filtered audio (or prompt mode), with an input of the film's length plus at least 5 s (up to 30 s), arranged to the cut, then tone and loudness matched. Make a second track only after the person approves the picture. Score it with numbers only: tone distance, loudness and the hit on the cut. Say in the delivery that nobody has heard it.
-12. **Delivery render.**
+    - **Story read (the frame read), while a fix round is left.** Write the frames into a new folder for each round: `rm -rf out/read-<round> && mkdir -p out/read-<round> && ffmpeg -i out/<name>-d.mp4 -vf "select='not(mod(n\,15))',setpts=N/(2*TB)" -r 2 -q:v 3 out/read-<round>/f%03d.jpg`. The draft is 30 fps, so frame N is at exactly (N − 1) × 0.5 s. A beat can fall between two samples, so also add one clear frame from the middle of each kept beat, at the middle of its shot in the cuts that `build.py` printed for the draft: `ffmpeg -ss <s> -i out/<name>-d.mp4 -frames:v 1 -q:v 3 out/read-<round>/t<s>.jpg`, with `<s>` in seconds to two decimals. Start a fresh agent with no build context. Give it only the `out/read-<round>` folder and `$X/../prompts/frame-read.md`, never the spec or your notes. Compare its notes with the shot table in `SPEC.md`, and its step line (question 5) with `STORY.md`: that is the story gate. Each mismatch is a fault: a beat it does not read or reads out of order, a `product` shot it does not read as the product, a payoff that reads as a loading state, text cut by the edge, a blank. Fix it, or list it in the delivery. If you cannot start a fresh agent, write what each frame shows before you open `SPEC.md` again, then compare.
+12. **Make the sound** (`references/sound.md`). One track for the opening: video-to-music from the reference's filtered audio (or prompt mode), with an input of the film's length plus at least 5 s (up to 30 s), arranged to the cut, then tone and loudness matched. Make a second track only after the person approves the picture. Score it with numbers only: tone distance, loudness and the hit on the cut. Say in the delivery that nobody has heard it.
+13. **Delivery render.**
     - Build at the spec's frame rate: `python $X/build.py film/spec.json page film/<name>`, run `check.cjs` once more, then `bash $X/render.sh film/<name> out/<name>-raw.mp4`.
     - `render.sh` renders on the GPU when there is one, checks the frame count and runs `qa.py`. If it finds one-frame flashes or drops, it renders again without the GPU. If flashes remain, it exits with code 3 and lists them: look at those frames and go on only if the spec plans them. Never wait on a render with `pgrep -f`.
     - `qa.py` writes `cut-N.jpg` (the frames around each cut), a strip and `qa.txt` to `out/<name>-raw-qa/`. It lists jumps away from the cuts, flashes, and blank or near-blank runs on any background colour. Look at each image and each run.
-    - Measure and compare the delivery render once (step 10). Mux the sound.
-13. **Side by side and review.**
+    - Measure and compare the delivery render once (step 11). Mux the sound.
+14. **Side by side and review.**
     - Side by side: `python $X/sbs.py` with the reference on the left.
     - Watch it against the reference, shot by shot: cut rhythm, camera, reveals and sound. If a change since the draft touches a shot the frame read covered, read those frames again.
     - Optional: Gemini on a 720p proxy of the side by side with a filled copy of `$X/../prompts/film-review.md`, as a list of faults to check. Its scores do not rank films.
-14. **Deliver.**
-    - If `check.cjs` or `compare.py` still fails after 3 rounds, start your message with `FAILED GATE:` and the open failures. Call the film a draft. If the person asked for a slow tease or a very short opening, report a failed product-time or 3 s line as their choice instead.
+15. **Deliver.**
+    - If `check.cjs` or `compare.py` still fails after 3 rounds, or the story read still misses a beat or reads them out of order, start your message with `FAILED GATE:` and the open failures. Call the film a draft. If the person asked for a slow tease or a very short opening, report a failed product-time or 3 s line as their choice instead.
     - Send the film and the side by side with its credit line.
-    - Send `SPEC.md` with the hero, the reference and its fit, both verdicts as the scripts printed them, the frame-read mismatches, what you rejected, and the cost from the job receipts.
+    - Send `STORY.md` and `SPEC.md` with the hero, the reference and its fit, both verdicts as the scripts printed them, the frame-read mismatches, what you rejected, and the cost from the job receipts.
     - Write `STATE.md` for the next round: the paths (page, reference, spec, film, music), the last verdicts, what is approved, what is open, and the receipts. A notes round starts a fresh session from `STATE.md`, `spec.json` and the notes. Do not resume the long build session: it reads its whole history again on every turn.
     - Delete `film/*/.hf-cache`: the page-video frames HyperFrames extracted for the renders, about 1.5 GB for a 15 s film. A new render extracts them again.
     - Then stop for the person's call.
@@ -151,7 +165,8 @@ These are floors. The person's eye decides.
 | Motion | `compare.py` | no `STILL` or `EMPTY` shot; the film at most 10 points stiller than its reference windows |
 | Camera | `compare.py` table | each shot's median speed within about 15% of its window, in the same direction family, with the same ease |
 | Focus | shot images | the band in the same place and of the same width as in the reference; `focus.grid` runs high on dark frames |
-| Frame read | step 10 | no mismatch left with the spec |
+| Story | step 11 frame read | every kept beat of `STORY.md` read, in order |
+| Frame read | step 11 | no mismatch left with the spec |
 | Sound | `music_score.py`, `audio_profile.py` | third-octave distance under 6 dB, loudness within 2 LU, about the same sub share |
 
 ## Cost per opening

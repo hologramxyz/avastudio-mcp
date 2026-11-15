@@ -56,7 +56,7 @@ for i, s in enumerate(S["shots"]):
     sh = dict(t0=starts[i], t1=t1, focus=s["focus"], at=s["at"], rot=s.get("rot", [0, 0, 0]), zoom=s.get("zoom", [1, 1]),
               v=[s.get("drift", [0, 0])[0] * PW, s.get("drift", [0, 0])[1] * PW], dof=dict(s.get("dof", dict(angle=180, center=[50, 50], width=50))),
               vignette=s.get("vignette", [50, 50]), expo=s.get("expo", [0, 0]), solo=s.get("solo"), focus_to=s.get("focus_to"), ease=s.get("ease"), move_d=s.get("move_d"),
-              subject=s.get("subject"), bleed=s.get("bleed"))
+              subject=s.get("subject"), beat=s.get("beat"), bleed=s.get("bleed"))
     if "drift0" in s:
         sh.update(v0=[s["drift0"][0] * PW, s["drift0"][1] * PW], tau=s.get("tau", 1.0), rv=s.get("rv", 0))
     if "rack" in sh["dof"]:

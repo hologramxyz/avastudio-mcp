@@ -20,7 +20,7 @@ Read the entry that matches what you see. Each one is a case, not a rule.
 - **A live-action reference with no live-action material** opened on a still UI card with no hook. Pick the reference by fit.
 - **The pixel text measure misread graphics.** A dot-matrix car read as a 29% line of text and cost a run its fix rounds. The text floor is now measured in the DOM.
 - **A film failed the stillness rule for moving more than the reference** (74% against 85%). The rule is now one-sided.
-- **A builder's report described a shot that was not in the film** ("the remake playing full frame"; the film showed a progress row). The frame read in step 10 exists because of this.
+- **A builder's report described a shot that was not in the film** ("the remake playing full frame"; the film showed a progress row). The frame read in step 11 exists because of this.
 - **A resumed session for one round of notes cost more than the whole first run,** because it read its long history on every turn. Start notes rounds fresh from `STATE.md`.
 - **A 0.5 s white blank frame passed the old black-only blank check.** `qa.py` now finds blank runs on any background colour.
 

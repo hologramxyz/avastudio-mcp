@@ -68,6 +68,7 @@ Each shot has a camera. The page point `focus` sits at screen point `at`. The pl
   - `check.cjs` measures the product time from it: the seconds where a `product` subject is visible at 25% of the frame or more, or spans 80% of the frame's height or width at 10% of its area or more. Pick the element that holds the product (a video, a panel, a card), not a small label or a whole section around it.
   - The hero is always `product`, even when it is a number or a response (an API's result). `proof` is a second fact.
   - In `device` mode the product is the phone screen: use `{"kind": "product", "sel": "#screen"}`, or an element inside it.
+- **`beat`:** the `STORY.md` beat this shot tells, as its row number and a few words, such as `"3: you pick a mode"`. `check.cjs` fails a shot whose number is not a kept row of `STORY.md`.
 - **`bleed`:** `true` when the reference also cuts its subject with the frame edge. Without it, `check.cjs` fails a subject that is more than 25% outside the frame.
 - **`solo`:** a list of page selectors. Only those parts of the page show in this shot; everything else, the page background included, is hidden. `[]` hides the whole page (for titles and the end card).
 - **`focus`:** in page px (the top left of the captured page is `[0, 0]`, at the capture width), or an element.
