@@ -2,7 +2,7 @@
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 sudo apt-get update -qq
-sudo apt-get install -y -qq ffmpeg python3-venv python3-pip git jq unzip curl xz-utils fonts-noto fonts-noto-color-emoji fonts-liberation fonts-inter fontconfig >/dev/null
+sudo apt-get install -y -qq ffmpeg python3-venv python3-pip git jq unzip curl xz-utils fonts-noto fonts-noto-color-emoji fonts-liberation fonts-inter fontconfig tesseract-ocr >/dev/null
 curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor --yes -o /usr/share/keyrings/google-chrome.gpg
 echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] https://dl.google.com/linux/chrome/deb/ stable main' | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
 sudo apt-get update -qq

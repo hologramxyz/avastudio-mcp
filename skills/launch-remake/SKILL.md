@@ -122,7 +122,7 @@ Run from a work folder that holds `refs/`, `page/`, `film/` and `out/`. `X` is t
    - `film/SPEC.md` is the human version: the hero, the reference and its fit, and each shot with its reference window, its `STORY.md` beat, subject, measured numbers and the real data it uses.
 10. **Build and check, before any render.**
    - Build: `python $X/build.py film/spec.json page film/<name>`.
-   - Check: `NODE_PATH=$(npm root -g) node $X/check.cjs film/<name>`. It prints each shot's subject size, biggest text and media count, then the product time. It fails on:
+   - Check: `NODE_PATH=$(npm root -g) node $X/check.cjs film/<name>`. It prints each shot's subject size, biggest text and media count, and the biggest word it reads (with tesseract) inside the subject's video or image, then the product time. It fails on:
      - a shot target or subject that is missing, hidden or off screen; images or video files that do not load; fonts that fail
      - a shot with no `subject`, or a `beat` that is not a kept row of `film/STORY.md`
      - product time under half of the film, or the first product shot later than 3 s. A `product` subject counts while it is visible at 25% of the frame or more, or spans 80% of the frame's height or width at 10% of its area or more (a phone or a bottle in a wide frame)
@@ -130,7 +130,7 @@ Run from a work folder that holds `refs/`, `page/`, `film/` and `out/`. `X` is t
      - a subject that is not visible, or is covered by an opaque title or the end card
      - a `product` or `proof` subject more than 25% outside the frame, unless the shot has `"bleed": true` because the reference cuts its subject too
      - the subject's image or video, over 10% of the frame, drawn above 1.5 times its pixels (soft). For a recording that is mostly text (a terminal, a chat), set its exact words as live type in its font and colours, timed to the recording.
-   - Lines that start with `note:` are for you to judge, such as readable text cut by the frame edge.
+   - Lines that start with `note:` are for you to judge, such as readable text cut by the frame edge, or text inside the subject's video too small for a phone.
    - Lint: `(cd film/<name> && npx hyperframes lint)` (0 errors).
    - Look: `(cd film/<name> && npx hyperframes snapshot --no-end --at <mid of each shot, each event>)`. Fix framing in the spec, rebuild and check again, until every still frames the right thing.
 11. **Draft render, motion match and story read.**
