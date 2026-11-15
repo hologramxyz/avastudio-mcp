@@ -243,18 +243,19 @@ x-status i {{ width:24px; height:11px; border-radius:4px; border:1.5px solid rgb
 x-island {{ position:absolute; left:50%; top:11px; width:118px; height:34px; margin-left:-59px; border-radius:20px; background:#000; }}"""
 end_css = end_html = ""
 if end:
+    stack_css = f"\n#line {{ display:flex; flex-direction:column; align-items:center; }}\n#w2 {{ margin-top:{end.get('gap', 0.3)}em; font-size:{end.get('rest_size', 0.5)}em; }}" if end.get('stack') else ''
     end_css = f"""
 #end {{ position:absolute; inset:0; background:{end.get('bg', '#000')}; display:flex; align-items:center; justify-content:center; }}
 #line {{ position:relative; font:{end.get('weight', 500)} {end.get('size', 64)}px/1.2 {end['font']}; letter-spacing:{end.get('tracking', '-.02em')}; white-space:nowrap; color:{end.get('color', '#fff')}; }}
 #w1 {{ display:inline-block; background-image:linear-gradient(90deg,{end.get('color', '#fff')} 0 var(--a),{end['sheen']} var(--b),{end.get('color', '#fff')} var(--c)); -webkit-background-clip:text; background-clip:text; color:transparent; }}
-#w2 {{ display:inline-block; font-weight:{end.get('rest_weight', 400)}; }}
+#w2 {{ display:inline-block; margin-left:{0 if end.get('stack') else end.get('gap', 0.45)}em; font-weight:{end.get('rest_weight', 400)}; }}{stack_css}
 #w2 b {{ font-weight:{end.get('rest_weight', 400)}; color:{end.get('accent_color', end['sheen'])}; }}"""
     e0 = max(end["t"], WIN[0])
     st = e0 - WIN[0]
     st = round(st, 4) if not WIN[0] else round(st * FPS) / FPS if abs(st * FPS - round(st * FPS)) < 1e-6 else st
     end_at = f'data-start="{st}" data-duration="{round(WIN[1] - e0, 4) if not WIN[0] else round(LEN - st, 9)}"' if e0 < WIN[1] else f'data-start="{LEN}" data-duration="{round(1 / FPS, 4)}"'
     end_html = (f'<div id="end" class="clip" {end_at}><div id="line"><span id="w1">{end["word"]}</span>'
-                f'<span id="w2">{end.get("rest", "")}<b>{end.get("accent", "")}</b></span></div></div>')
+                f'<span id="w2">{end.get("rest", "").lstrip()}<b>{end.get("accent", "")}</b></span></div></div>')
 
 css = f"""{page_css}
 #film {{ position:absolute; inset:0; background:{L['bg']}; overflow:hidden; }}

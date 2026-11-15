@@ -133,6 +133,7 @@ All times are absolute seconds or expressions.
 - **`end_line`:** the end card cuts in at `t` on `bg` (`#000`).
   - **Words:** `word` blurs in with a `sheen` colour sweep. Then the line slides it left and wipes in `rest` and then `accent` (in `accent_color`, default `sheen`).
   - **Type:** `font` (a CSS font stack whose family the captured page declares), `size` (64), `weight` (500), `rest_weight` (400), `color`, `tracking` (`-.02em`).
+  - **Layout:** `rest` sits `gap` (0.45 em) after `word`, so the name never runs into the line. `stack: true` puts `rest` on its own line under `word`, at `rest_size` (0.5 em) and `gap` (0.3 em) below it; use it for a line longer than a few words.
 
 ## Finding the numbers
 

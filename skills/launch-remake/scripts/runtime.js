@@ -217,7 +217,7 @@
       const sx = -20 + 150 * clamp((u - 0.25) / 1.1, 0, 1);
       w1.style.setProperty('--a', sx - 16 + '%'); w1.style.setProperty('--b', sx + '%'); w1.style.setProperty('--c', sx + 16 + '%');
       const m = clamp((u - 1.4) / 1.05, 0, 1), e = 1 - Math.pow(1 - m, 3);
-      line.style.transform = 'translateX(' + (1 - e) * w2.offsetWidth / 2 + 'px)';
+      line.style.transform = ev.stack ? 'translateY(' + (1 - e) * w2.offsetHeight / 2 + 'px)' : 'translateX(' + (1 - e) * w2.offsetWidth / 2 + 'px)';
       const rev = e * 112 - 6;
       const mi = 'linear-gradient(90deg,#000 ' + rev + '%,transparent ' + (rev + 6) + '%)';
       w2.style.maskImage = mi; w2.style.webkitMaskImage = mi;
