@@ -31,6 +31,7 @@ Screen-space layers above the page: titles, an "Introducing" line, a logo lockup
 - Overlays and clones sit inside copies of the page's ancestors (with `display: contents`), so the page's CSS still styles them.
 - Overlays run no page CSS animations or transitions, and the page ancestors copied around them draw no `::before` or `::after`.
 - Each overlay is a centred flex column. Use `order` to stack its parts, and CSS `zoom` (not `scale`) to enlarge a clone so its text stays sharp.
+- **A part of a still screen** is an overlay: a box the size of the part with `overflow: hidden`, holding the captured image at its offset, or a file cropped to the part. Make that box the shot's `subject`, so the frame checks measure the part and not the whole image. Move it with `fade` (`from`/`to` with `x`, `y`, `scale`, `blur`). A ring or bar fills by revealing its own pixels with a `prop` on a mask or `clip-path`.
 
 ## device (optional)
 

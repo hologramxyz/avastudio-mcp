@@ -77,6 +77,8 @@ while True:
     hsv = cv2.cvtColor(cv2.resize(c, (160, 90)), cv2.COLOR_BGR2HSV)
     hist = cv2.normalize(cv2.calcHist([hsv], [0, 1, 2], None, [12, 4, 8], [0, 180, 0, 256, 0, 256]), None).flatten()
     r = dict(t=round(t, 4), luma=round(float(g.mean()), 2), p99=round(float(np.percentile(g, 99)), 1))
+    m = max(1, s.shape[0] // 20)
+    r["edge"] = round(float(np.median(np.concatenate([s[:m].ravel(), s[-m:].ravel(), s[:, :m].ravel(), s[:, -m:].ravel()]))), 1)
     e = cv2.resize((cv2.Canny(g, 80, 200) > 0).astype(np.float32), (16, 9), interpolation=cv2.INTER_AREA)
     r["fill"] = round(float((e >= max(0.25 * e.max(), 0.01)).mean()) * 100, 1)
     r["text"] = text_h(g)

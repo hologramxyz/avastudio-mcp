@@ -27,7 +27,8 @@ const kept = (() => {
   const [head = [], ...rows] = fs.readFileSync(storyFile, 'utf8').split('\n').filter((l) => /^\s*\|/.test(l) && !/^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/.test(l)).map(cells);
   const col = (re, d) => { const j = head.findIndex((c) => re.test(c)); return j < 0 ? d : j; };
   const num = col(/^(#|no\.?|row|beat)$/i, -1);
-  return new Set(rows.filter((r) => !r.some((c) => /^[`*_\s]*(dropped|merged)\b/i.test(c))).map((r) => (num < 0 ? rows.indexOf(r) + 1 : parseInt(r[num], 10))));
+  const pc = col(/product/i, 0);
+  return new Set(rows.filter((r) => !r.slice(pc).some((c) => /^[`*_\s]*(dropped[`*_]*(?=\s*$|\s*[:(\u2013\u2014-]|\s+(for|from|because)\b)|merged[`*_]*(?=\s*$|\s*[:(\u2013\u2014-]|\s+(into|with)\s+(row\s+|beat\s+)?\d))/i.test(c))).map((r) => (num < 0 ? rows.indexOf(r) + 1 : parseInt(r[num], 10))));
 })();
 const beats = kept ? D.shots.flatMap((s, i) => {
   if (s.t1 <= D.win[0] || s.t0 >= D.win[1]) return [];
