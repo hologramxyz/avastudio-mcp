@@ -224,7 +224,7 @@
     };
   }
 
-  const ID = { opacity: 1, scale: 1, x: 0, y: 0, blur: 0 };
+  const ID = { opacity: 1, scale: 1, x: 0, y: 0, blur: 0, z: 0, rx: 0, ry: 0, rz: 0 };
   const EASE = { out: (x) => 1 - Math.pow(1 - x, 3), in: (x) => x * x * x, inout: (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2), linear: (x) => x,
     expo: (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x)), back: (x) => 1 + 2.7 * Math.pow(x - 1, 3) + 1.7 * Math.pow(x - 1, 2),
     expo_in: (x) => (x <= 0 ? 0 : Math.pow(2, 10 * x - 10)),
@@ -247,7 +247,8 @@
       let st = list[0].from;
       if (cur) { const p = cur.ease(clamp((t - cur.t) / cur.d, 0, 1)); st = {}; for (const k in ID) st[k] = cur.from[k] + (cur.to[k] - cur.from[k]) * p; }
       el.style.opacity = st.opacity;
-      el.style.transform = BASE.get(el) + (st.x || st.y ? 'translate(' + st.x + 'px,' + st.y + 'px) ' : '') + (st.scale !== 1 ? 'scale(' + st.scale + ')' : '');
+      const d3 = st.z || st.rx || st.ry || st.rz ? 'perspective(' + L.perspective + 'px) translateZ(' + st.z + 'px) rotateX(' + st.rx + 'deg) rotateY(' + st.ry + 'deg) rotateZ(' + st.rz + 'deg) ' : '';
+      el.style.transform = BASE.get(el) + (st.x || st.y ? 'translate(' + st.x + 'px,' + st.y + 'px) ' : '') + d3 + (st.scale !== 1 ? 'scale(' + st.scale + ')' : '');
       el.style.filter = st.blur > 0.05 ? 'blur(' + st.blur.toFixed(2) + 'px)' : 'none';
     }
   }

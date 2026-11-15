@@ -114,7 +114,7 @@ All times are absolute seconds or expressions.
 - **`press`:** a button press. `target`, `t`, `depth` (0.035 dips to 96.5% for 80 ms, then recovers over 200 ms).
 - **`fade`:** opacity, scale, slide and blur between two states.
   - `sel` (every match, `step` s apart) or `target` (one element); `t`, `d` (0.5); `ease`: `out` (default), `in`, `inout` or `linear`.
-  - `from` and `to` take any of `{opacity, scale, x, y, blur}`. Fields you leave out stay at the plain state (1, 1, 0, 0, 0).
+  - `from` and `to` take any of `{opacity, scale, x, y, blur, z, rx, ry, rz}`. Fields you leave out stay at the plain state (1, 1, then 0). `z` moves the element toward the viewer in px, and `rx`, `ry`, `rz` turn it in degrees, at the look's `perspective`: a card that swings in from a tilt, or layers at different depths.
   - **Before its first fade, an element shows that fade's `from` state.** If it must show earlier, add an identity fade at `t: 0` (`{"type": "fade", "sel": "...", "t": 0, "d": 0.001}`). Watch for parents: a form held at opacity 0 hides the tab row inside it.
   - For several fades on one element, the latest one that has started wins. An instant cut-away is `{"t": "cut1", "d": 0.001, "to": {"opacity": 0}}`.
   - A fade adds its slide and scale on top of the element's captured transform.
