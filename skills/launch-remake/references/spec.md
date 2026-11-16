@@ -31,6 +31,7 @@ Screen-space layers above the page: titles, an "Introducing" line, a logo lockup
 - Overlays and clones sit inside copies of the page's ancestors (with `display: contents`), so the page's CSS still styles them.
 - Overlays run no page CSS animations or transitions, and the page ancestors copied around them draw no `::before` or `::after`.
 - Each overlay is a centred flex column. Use `order` to stack its parts, and CSS `zoom` (not `scale`) to enlarge a clone so its text stays sharp.
+- **A part of a still screen** is an overlay: a box the size of the part with `overflow: hidden`, holding the captured image at its offset, or a file cropped to the part. Make that box the shot's `subject`, so the frame checks measure the part and not the whole image. Move it with `fade` (`from`/`to` with `x`, `y`, `scale`, `blur`). A ring or bar fills by revealing its own pixels with a `prop` on a mask or `clip-path`.
 
 ## device (optional)
 
@@ -68,6 +69,7 @@ Each shot has a camera. The page point `focus` sits at screen point `at`. The pl
   - `check.cjs` measures the product time from it: the seconds where a `product` subject is visible at 25% of the frame or more, or spans 80% of the frame's height or width at 10% of its area or more. Pick the element that holds the product (a video, a panel, a card), not a small label or a whole section around it.
   - The hero is always `product`, even when it is a number or a response (an API's result). `proof` is a second fact.
   - In `device` mode the product is the phone screen: use `{"kind": "product", "sel": "#screen"}`, or an element inside it.
+- **`beat`:** the `STORY.md` beat this shot tells, as its row number and a few words, such as `"3: you pick a mode"`. `check.cjs` fails a shot whose number is not a kept row of `STORY.md`.
 - **`bleed`:** `true` when the reference also cuts its subject with the frame edge. Without it, `check.cjs` fails a subject that is more than 25% outside the frame.
 - **`solo`:** a list of page selectors. Only those parts of the page show in this shot; everything else, the page background included, is hidden. `[]` hides the whole page (for titles and the end card).
 - **`focus`:** in page px (the top left of the captured page is `[0, 0]`, at the capture width), or an element.
@@ -112,7 +114,7 @@ All times are absolute seconds or expressions.
 - **`press`:** a button press. `target`, `t`, `depth` (0.035 dips to 96.5% for 80 ms, then recovers over 200 ms).
 - **`fade`:** opacity, scale, slide and blur between two states.
   - `sel` (every match, `step` s apart) or `target` (one element); `t`, `d` (0.5); `ease`: `out` (default), `in`, `inout` or `linear`.
-  - `from` and `to` take any of `{opacity, scale, x, y, blur}`. Fields you leave out stay at the plain state (1, 1, 0, 0, 0).
+  - `from` and `to` take any of `{opacity, scale, x, y, blur, z, rx, ry, rz}`. Fields you leave out stay at the plain state (1, 1, then 0). `z` moves the element toward the viewer in px, and `rx`, `ry`, `rz` turn it in degrees, at the look's `perspective`: a card that swings in from a tilt, or layers at different depths.
   - **Before its first fade, an element shows that fade's `from` state.** If it must show earlier, add an identity fade at `t: 0` (`{"type": "fade", "sel": "...", "t": 0, "d": 0.001}`). Watch for parents: a form held at opacity 0 hides the tab row inside it.
   - For several fades on one element, the latest one that has started wins. An instant cut-away is `{"t": "cut1", "d": 0.001, "to": {"opacity": 0}}`.
   - A fade adds its slide and scale on top of the element's captured transform.
@@ -132,6 +134,7 @@ All times are absolute seconds or expressions.
 - **`end_line`:** the end card cuts in at `t` on `bg` (`#000`).
   - **Words:** `word` blurs in with a `sheen` colour sweep. Then the line slides it left and wipes in `rest` and then `accent` (in `accent_color`, default `sheen`).
   - **Type:** `font` (a CSS font stack whose family the captured page declares), `size` (64), `weight` (500), `rest_weight` (400), `color`, `tracking` (`-.02em`).
+  - **Layout:** `rest` sits `gap` (0.45 em) after `word`, so the name never runs into the line. `stack: true` puts `rest` on its own line under `word`, at `rest_size` (0.5 em) and `gap` (0.3 em) below it; use it for a line longer than a few words.
 
 ## Finding the numbers
 

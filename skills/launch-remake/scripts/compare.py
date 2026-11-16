@@ -32,13 +32,14 @@ def window(frames, fs, a, b):
     v = sorted(math.hypot(r["dx"], r["dy"]) / W * 100 * fs for r in rows if "dx" in r)
     fl = sorted(r["fill"] for r in rows if "fill" in r)
     tx = sorted(r["text"] for r in rows if r.get("text"))
+    eg = sorted(r["edge"] for r in rows if "edge" in r)
     em = run = 0.0
     for r in rows:
         run = run + 1 / fs if r.get("fill") is not None and r["fill"] < 1 else 0.0
         em = max(em, run)
     return dict(speed=round(v[len(v) // 2], 3) if v else None, still=round(100 * sum(r["area"] < 0.015 for r in rows) / len(rows)) if rows else None, cover=len(rows) / want if want else 1.0,
                 change=round(sum(r["diff"] for r in rows) / max(1, len(rows)), 2), fill=fl[len(fl) // 2] if fl else None,
-                text=tx[len(tx) // 2] if tx else None, empty=round(em, 2))
+                text=tx[len(tx) // 2] if tx else None, empty=round(em, 2), edge=eg[len(eg) // 2] if eg else None)
 
 
 print(f"render cuts {F['cuts']}, layout jumps {[j['t'] for j in F.get('jumps', [])]}")
@@ -49,7 +50,7 @@ cut = lambda t: (round(t * FPS) + 0.5) / FPS
 starts = [0.0] + [cut(s["t0"]) for s in S["shots"][1:]]
 names = dict(dur=DUR, **{f"cut{i}": v for i, v in enumerate(starts)}, **{k: cut(v) for k, v in S.get("marks", {}).items()})
 tm = lambda v: round(float(calc(v, names)) if isinstance(v, str) else float(v), 4)
-fails, still = [], [0.0, 0.0, 0.0]
+fails, still, ground, spans = [], [0.0, 0.0, 0.0], [], []
 for i, s in enumerate(S["shots"]):
     a, b = starts[i], tm(s["t1"]) if "t1" in s else starts[i + 1] if i + 1 < len(starts) else DUR
     b = min(b, DUR)
@@ -59,6 +60,7 @@ for i, s in enumerate(S["shots"]):
             fails.append(f"shot {i} is only partly inside the window: start and end the window on cuts")
         continue
     o = fr(WIN[0]) / FPS if WIN else 0
+    spans.append((a, b))
     f = window(FF, F["sample_fps"], a - o, b - o)
     if "ref_window" in s:
         ra, rb = s["ref_window"]
@@ -69,7 +71,9 @@ for i, s in enumerate(S["shots"]):
         fails.append(f"shot {i} has no ref or ref_window")
     if ra is not None and not 0 <= ra < rb <= R["dur"] + 1e-3:
         fails.append(f"shot {i}: its reference window {ra}-{rb} is outside the reference (0-{R['dur']} s)")
-    r = window(RF, R["sample_fps"], ra, rb) if ra is not None else dict(speed=None, still=None, change=None, fill=None, text=None, empty=None)
+    r = window(RF, R["sample_fps"], ra, rb) if ra is not None else dict(speed=None, still=None, change=None, fill=None, text=None, empty=None, edge=None)
+    if f["still"] is not None and r["still"] is not None and (s.get("subject") or {}).get("kind") in ("brand", "other"):
+        ground.append((i, f["edge"], r["edge"]))
     for side, m in (("render", f), ("reference", r)):
         if m["still"] is not None and m["cover"] < 0.9:
             fails.append(f"shot {i}: only {m['cover']:.0%} of the shot is measured in the {side}")
@@ -90,6 +94,23 @@ if still[2]:
     print(f"stillness over the mapped shots: render {fm:.0f}%, reference windows {rm:.0f}%")
     if fm > rm + 10:
         fails.append(f"the film is {fm - rm:.0f} points stiller than its reference windows")
+for i, fg, rg in ground:
+    if fg is None or rg is None:
+        fails.append(f"LOOK: shot {i} has no ground measure; run measure_ref.py again on the {'render' if fg is None else 'reference'}")
+        continue
+    print(f"ground (frame edge luma) of shot {i}: render {fg:.0f}, reference window {rg:.0f}")
+    if abs(fg - rg) > 80:
+        fails.append(f"LOOK: shot {i}'s ground is {'dark' if fg < rg else 'light'} where the reference's is {'light' if fg < rg else 'dark'} (edge luma {fg:.0f} against {rg:.0f}); put it on the reference's ground and keep the product's own colours inside its UI")
+if still[2] and not ground:
+    print("ground not checked: no brand or other shot")
+fk = lambda x: math.ceil(x * FPS - 1e-6)
+at, gaps = (fk(WIN[0]) if WIN else 0), []
+for a, b in sorted((fk(a), fk(b)) for a, b in spans) + [(fk(min(WIN[1], DUR) if WIN else DUR),) * 2]:
+    if a > at:
+        gaps.append(f"{at / FPS:.2f}-{a / FPS:.2f} s")
+    at = max(at, b)
+if gaps:
+    fails.append(f"frames in no shot: {', '.join(gaps)}; end each shot where the next starts, and give the end card its own brand shot with the reference's end window")
 ra, fa = R.get("audio") or {}, F.get("audio") or {}
 if ra and fa:
     for k in ("lufs", "lra", "peak", "sub_pct", "mid_pct", "centroid_hz", "bpm", "beat_strength", "onsets_per_s", "side_db"):

@@ -77,6 +77,8 @@ while True:
     hsv = cv2.cvtColor(cv2.resize(c, (160, 90)), cv2.COLOR_BGR2HSV)
     hist = cv2.normalize(cv2.calcHist([hsv], [0, 1, 2], None, [12, 4, 8], [0, 180, 0, 256, 0, 256]), None).flatten()
     r = dict(t=round(t, 4), luma=round(float(g.mean()), 2), p99=round(float(np.percentile(g, 99)), 1))
+    m = max(1, s.shape[0] // 20)
+    r["edge"] = round(float(np.median(np.concatenate([s[:m].ravel(), s[-m:].ravel(), s[:, :m].ravel(), s[:, -m:].ravel()]))), 1)
     e = cv2.resize((cv2.Canny(g, 80, 200) > 0).astype(np.float32), (16, 9), interpolation=cv2.INTER_AREA)
     r["fill"] = round(float((e >= max(0.25 * e.max(), 0.01)).mean()) * 100, 1)
     r["text"] = text_h(g)
@@ -204,11 +206,19 @@ REL = 0.25
 SPLIT = 0.2
 WHIP = 150.0
 MIN_MOVE, MIN_HOLD, MIN_TRANS = 0.15, 0.25, 0.1
+BREAK = 0.82
 cam = np.array([np.hypot(np.hypot(r["dx"], r["dy"]) / W * 100, abs(np.log(r["scale"])) * 31) * fs if "dx" in r else np.nan for r in rows])
 cam_s = np.array([np.nanmedian(cam[max(0, k - 1):k + 2]) if np.isfinite(cam[max(0, k - 1):k + 2]).any() else 0.0 for k in range(n)])
 like = np.array([r.get("ncc", 1.0) for r in rows])
 kt = np.array([r["t"] for r in rows])
-hard = {int(np.argmin(np.abs(kt - c))): "cut" for c in cuts}
+
+
+def broke(k):
+    v = [like[j] for j in range(k - 1, max(0, k - 4), -1) if diff[j] >= 1.0][:2]
+    return len(v) == 2 and max(v) < BREAK
+
+
+hard = {k: "transition" if broke(k) else "cut" for k in (int(np.argmin(np.abs(kt - c))) for c in cuts)}
 hard.update({int(np.argmin(np.abs(kt - j["t"]))): "jump" for j in jumps})
 
 tr = np.zeros(n, bool)

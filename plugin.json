@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "avastudio",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Research, draft, produce and edit creative projects with Ava Studio.",
   "author": {
     "name": "Hologram Labs",
@@ -90,7 +90,7 @@
         "demo_recording_url": "https://youtu.be/iek-gxm19Ko"
       },
       "publication": {
-        "release_notes": "Add the launch-remake skill. Pick a reference from Ava's launch style library and remake its cuts, camera and sound for a product from its real page. The film renders locally with HyperFrames, so the skill needs a local agent such as Codex. Existing workflows remain supported."
+        "release_notes": "Fix launch-remake page captures: a reload check against the live page, video and canvas boxes, and videos tagged with alpha that are fully opaque now play. Renders keep extracted video frames with the film, reuse them on retries and delete them at delivery. Launch-remake now maps the reference's story, one line per beat, to the product's own steps, shows that map next to the reference before building, and requires the film to tell those beats in order, with the same items from each step to its result, as well as pass the motion check. Titles and the end card keep the reference's ground, every frame belongs to a mapped shot, and the end card sets its line apart from the name. Parts of a still screen can now turn in depth, and launch-remake copies how the reference's parts enter, ease and stagger, and how each shot enters. Its check reads the words inside a product video (the setup scripts now install tesseract), and a picture that breaks up into dots before a cut is measured as a transition. Films started on 0.8.0 need a STORY.md, a beat on each shot and fresh measurements before their checks pass."
       }
     }
   }

@@ -72,3 +72,5 @@ while len(fr) % 8:
     fr.append(np.zeros_like(fr[0]))
 cv2.imwrite(os.path.join(out, "strip.jpg"), cv2.vconcat([cv2.hconcat(fr[r:r + 8]) for r in range(0, len(fr), 8)]))
 print("wrote", out)
+if n != B["frames"]:
+    sys.exit(f"frame count is wrong: {n} of {B['frames']}")

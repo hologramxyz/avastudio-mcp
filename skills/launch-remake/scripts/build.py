@@ -56,7 +56,7 @@ for i, s in enumerate(S["shots"]):
     sh = dict(t0=starts[i], t1=t1, focus=s["focus"], at=s["at"], rot=s.get("rot", [0, 0, 0]), zoom=s.get("zoom", [1, 1]),
               v=[s.get("drift", [0, 0])[0] * PW, s.get("drift", [0, 0])[1] * PW], dof=dict(s.get("dof", dict(angle=180, center=[50, 50], width=50))),
               vignette=s.get("vignette", [50, 50]), expo=s.get("expo", [0, 0]), solo=s.get("solo"), focus_to=s.get("focus_to"), ease=s.get("ease"), move_d=s.get("move_d"),
-              subject=s.get("subject"), bleed=s.get("bleed"))
+              subject=s.get("subject"), beat=s.get("beat"), bleed=s.get("bleed"))
     if "drift0" in s:
         sh.update(v0=[s["drift0"][0] * PW, s["drift0"][1] * PW], tau=s.get("tau", 1.0), rv=s.get("rv", 0))
     if "rack" in sh["dof"]:
@@ -97,12 +97,24 @@ page_html = open(os.path.join(cap, "page.html")).read()
 if S["page"].get("videos"):
     os.makedirs(os.path.join(proj, "assets", "cap"), exist_ok=True)
 
+    def see_through(src, seen={}):
+        if src not in seen:
+            f = os.path.join(cap, src)
+            pr = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=codec_name,pix_fmt:stream_tags=alpha_mode", "-of", "csv=p=0", f],
+                                capture_output=True, text=True).stdout.strip().lower()
+            seen[src] = False
+            if re.search(r"(^|,)(yuva|rgba|argb|bgra|abgr|gbrap|ya)|,1$", pr):
+                dec = {"vp9": ["-c:v", "libvpx-vp9"], "vp8": ["-c:v", "libvpx"]}.get(pr.split(",")[0], [])
+                r = subprocess.run(["ffmpeg", "-nostdin", "-v", "error", *dec, "-i", f, "-an", "-vf", "format=rgba,alphaextract,signalstats,metadata=print:key=lavfi.signalstats.YMIN:file=-",
+                                    "-f", "null", "-"], capture_output=True, text=True)
+                low = [int(v) for v in re.findall(r"YMIN=(\d+)", r.stdout)]
+                seen[src] = bool(r.returncode or not low or min(low) < 255)
+                print(f"page video {src} has an alpha channel, it stays a still" if seen[src] else f"page video {src} is tagged with alpha but every pixel is opaque, it plays")
+        return seen[src]
+
     def live(m, n=iter(range(10 ** 4)), done=set()):
         src, out = m.group(1), os.path.splitext(m.group(1))[0] + "-loop.mp4"
-        pr = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=pix_fmt:stream_tags=alpha_mode", "-of", "csv=p=0",
-                             os.path.join(cap, src)], capture_output=True, text=True).stdout.strip().lower()
-        if re.search(r"(^|,)(yuva|rgba|argb|bgra|abgr|gbrap|ya)|,1$", pr):
-            print(f"page video {src} has an alpha channel, it stays a still")
+        if see_through(src):
             return m.group(0)
         if out not in done:
             r = subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-stream_loop", "-1", "-i", os.path.join(cap, src), "-t", str(WIN[1] + 0.5), "-an",
@@ -231,18 +243,19 @@ x-status i {{ width:24px; height:11px; border-radius:4px; border:1.5px solid rgb
 x-island {{ position:absolute; left:50%; top:11px; width:118px; height:34px; margin-left:-59px; border-radius:20px; background:#000; }}"""
 end_css = end_html = ""
 if end:
+    stack_css = f"\n#line {{ display:flex; flex-direction:column; align-items:center; }}\n#w2 {{ margin-top:{end.get('gap', 0.3)}em; font-size:{end.get('rest_size', 0.5)}em; }}" if end.get('stack') else ''
     end_css = f"""
 #end {{ position:absolute; inset:0; background:{end.get('bg', '#000')}; display:flex; align-items:center; justify-content:center; }}
 #line {{ position:relative; font:{end.get('weight', 500)} {end.get('size', 64)}px/1.2 {end['font']}; letter-spacing:{end.get('tracking', '-.02em')}; white-space:nowrap; color:{end.get('color', '#fff')}; }}
 #w1 {{ display:inline-block; background-image:linear-gradient(90deg,{end.get('color', '#fff')} 0 var(--a),{end['sheen']} var(--b),{end.get('color', '#fff')} var(--c)); -webkit-background-clip:text; background-clip:text; color:transparent; }}
-#w2 {{ display:inline-block; font-weight:{end.get('rest_weight', 400)}; }}
+#w2 {{ display:inline-block; margin-left:{0 if end.get('stack') else end.get('gap', 0.45)}em; font-weight:{end.get('rest_weight', 400)}; }}{stack_css}
 #w2 b {{ font-weight:{end.get('rest_weight', 400)}; color:{end.get('accent_color', end['sheen'])}; }}"""
     e0 = max(end["t"], WIN[0])
     st = e0 - WIN[0]
     st = round(st, 4) if not WIN[0] else round(st * FPS) / FPS if abs(st * FPS - round(st * FPS)) < 1e-6 else st
     end_at = f'data-start="{st}" data-duration="{round(WIN[1] - e0, 4) if not WIN[0] else round(LEN - st, 9)}"' if e0 < WIN[1] else f'data-start="{LEN}" data-duration="{round(1 / FPS, 4)}"'
     end_html = (f'<div id="end" class="clip" {end_at}><div id="line"><span id="w1">{end["word"]}</span>'
-                f'<span id="w2">{end.get("rest", "")}<b>{end.get("accent", "")}</b></span></div></div>')
+                f'<span id="w2">{end.get("rest", "").lstrip()}<b>{end.get("accent", "")}</b></span></div></div>')
 
 css = f"""{page_css}
 #film {{ position:absolute; inset:0; background:{L['bg']}; overflow:hidden; }}

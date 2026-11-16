@@ -217,14 +217,14 @@
       const sx = -20 + 150 * clamp((u - 0.25) / 1.1, 0, 1);
       w1.style.setProperty('--a', sx - 16 + '%'); w1.style.setProperty('--b', sx + '%'); w1.style.setProperty('--c', sx + 16 + '%');
       const m = clamp((u - 1.4) / 1.05, 0, 1), e = 1 - Math.pow(1 - m, 3);
-      line.style.transform = 'translateX(' + (1 - e) * w2.offsetWidth / 2 + 'px)';
+      line.style.transform = ev.stack ? 'translateY(' + (1 - e) * w2.offsetHeight / 2 + 'px)' : 'translateX(' + (1 - e) * w2.offsetWidth / 2 + 'px)';
       const rev = e * 112 - 6;
       const mi = 'linear-gradient(90deg,#000 ' + rev + '%,transparent ' + (rev + 6) + '%)';
       w2.style.maskImage = mi; w2.style.webkitMaskImage = mi;
     };
   }
 
-  const ID = { opacity: 1, scale: 1, x: 0, y: 0, blur: 0 };
+  const ID = { opacity: 1, scale: 1, x: 0, y: 0, blur: 0, z: 0, rx: 0, ry: 0, rz: 0 };
   const EASE = { out: (x) => 1 - Math.pow(1 - x, 3), in: (x) => x * x * x, inout: (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2), linear: (x) => x,
     expo: (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x)), back: (x) => 1 + 2.7 * Math.pow(x - 1, 3) + 1.7 * Math.pow(x - 1, 2),
     expo_in: (x) => (x <= 0 ? 0 : Math.pow(2, 10 * x - 10)),
@@ -247,7 +247,8 @@
       let st = list[0].from;
       if (cur) { const p = cur.ease(clamp((t - cur.t) / cur.d, 0, 1)); st = {}; for (const k in ID) st[k] = cur.from[k] + (cur.to[k] - cur.from[k]) * p; }
       el.style.opacity = st.opacity;
-      el.style.transform = BASE.get(el) + (st.x || st.y ? 'translate(' + st.x + 'px,' + st.y + 'px) ' : '') + (st.scale !== 1 ? 'scale(' + st.scale + ')' : '');
+      const d3 = st.z || st.rx || st.ry || st.rz ? 'perspective(' + L.perspective + 'px) translateZ(' + st.z + 'px) rotateX(' + st.rx + 'deg) rotateY(' + st.ry + 'deg) rotateZ(' + st.rz + 'deg) ' : '';
+      el.style.transform = BASE.get(el) + (st.x || st.y ? 'translate(' + st.x + 'px,' + st.y + 'px) ' : '') + d3 + (st.scale !== 1 ? 'scale(' + st.scale + ')' : '');
       el.style.filter = st.blur > 0.05 ? 'blur(' + st.blur.toFixed(2) + 'px)' : 'none';
     }
   }

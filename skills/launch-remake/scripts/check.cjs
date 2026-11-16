@@ -20,6 +20,23 @@ const inner = src.slice(src.indexOf('<template>') + 10, src.lastIndexOf('</templ
 const mk = '<script>\n(function () {\n  const D = ', at = src.indexOf(mk) + mk.length;
 const D = JSON.parse(src.slice(at, src.indexOf(';\n', at)));
 const [W, H] = D.size;
+const INK = 0.66, CONF = 78;
+const storyFile = path.join(path.dirname(proj), 'STORY.md');
+const cells = (l) => l.trim().replace(/^\|/, '').replace(/(?<!\\)\|$/, '').split(/(?<!\\)\|/).map((c) => c.trim());
+const kept = (() => {
+  if (!fs.existsSync(storyFile)) return null;
+  const [head = [], ...rows] = fs.readFileSync(storyFile, 'utf8').split('\n').filter((l) => /^\s*\|/.test(l) && !/^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/.test(l)).map(cells);
+  const col = (re, d) => { const j = head.findIndex((c) => re.test(c)); return j < 0 ? d : j; };
+  const num = col(/^(#|no\.?|row|beat)$/i, -1);
+  const pc = col(/product/i, 0);
+  return new Set(rows.filter((r) => !r.slice(pc).some((c) => /^[`*_\s]*(dropped[`*_]*(?=\s*$|\s*[:(\u2013\u2014-]|\s+(for|from|because)\b)|merged[`*_]*(?=\s*$|\s*[:(\u2013\u2014-]|\s+(into|with)\s+(row\s+|beat\s+)?\d))/i.test(c))).map((r) => (num < 0 ? rows.indexOf(r) + 1 : parseInt(r[num], 10))));
+})();
+const beats = kept ? D.shots.flatMap((s, i) => {
+  if (s.t1 <= D.win[0] || s.t0 >= D.win[1]) return [];
+  const n = Number(((typeof s.beat === 'string' ? s.beat.trim() : '').match(/^(\d+)\s*:\s*\S/) || [])[1]);
+  if (!n) return [`shot ${i}: beat ${JSON.stringify(s.beat ?? null).slice(0, 40)} is not a STORY.md row; write its row number and a few words, such as "3: you pick a mode"`];
+  return kept.has(n) ? [] : [`shot ${i}: beat ${n} is not a kept row of STORY.md`];
+}) : [`no STORY.md next to ${path.basename(proj)}; map the story before you plan the shots`];
 const harness = `<!doctype html><html><head><meta charset="utf-8">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <style>html,body{margin:0;background:#000;overflow:hidden}#root{position:relative;width:${W}px;height:${H}px;overflow:hidden}
@@ -219,7 +236,7 @@ const server = require('http').createServer((req, res) => {
       if (s.t1 <= D.win[0] || s.t0 >= D.win[1]) return;
       const sb = subs[i];
       if (sb.err) return out.push(sb.err);
-      const row = { i, kind: sb.kind, area: [], text: 0, focus: null, media: 0, clipped: [], cut: 0, soft: new Map(), nometa: new Set(), noimg: new Set(), big: false };
+      const row = { i, kind: sb.kind, area: [], text: 0, focus: null, media: 0, clipped: [], cut: 0, soft: new Map(), nometa: new Set(), noimg: new Set(), big: false, ink: [] };
       for (const f of [0.5, 0.85]) {
         const t = s.t0 + (s.t1 - s.t0) * f;
         go(t);
@@ -254,6 +271,8 @@ const server = require('http').createServer((req, res) => {
           const sc = k * (['contain', 'scale-down'].includes(fit) ? Math.min : Math.max)(m.offsetWidth / nw, m.offsetHeight / nh);
           const key = `${m.tagName.toLowerCase()} ${src}`;
           if (sc > UP) row.soft.set(key, { sc: Math.max(sc, (row.soft.get(key) || { sc: 0 }).sc), px: `${nw}x${nh}` });
+          const file = m.getAttribute('src') || '';
+          if (!/^[a-z]+:/i.test(file)) row.ink.push([file.replace(/[?#].*$/, ''), m.tagName === 'VIDEO' ? t : null, sc]);
         }
       }
       for (const [m, v] of row.soft) out.push(`shot ${i}: ${m} is drawn at ${v.sc.toFixed(1)}x its ${v.px} pixels and looks soft; zoom out, use a sharper file, or set its text as live type`);
@@ -292,12 +311,35 @@ const server = require('http').createServer((req, res) => {
       if (first !== null && first > HOOK && first < HOOK + STEP && isProd(D.win[0] + HOOK)) first = HOOK;
       if (first === null || first > HOOK) out.push(`the product is first on screen large at ${first === null ? 'no point' : first.toFixed(1) + ' s'}, later than ${HOOK} s`);
     }
-    return { out, notes, table, summary, full };
+    return { out, notes, table, summary, full, floor: TEXT, ink: rows.map((r) => ({ i: r.i, text: r.text, ink: r.ink })) };
   }, D);
+  const { execFileSync } = require('child_process');
+  const words = (f, t) => {
+    const png = execFileSync('ffmpeg', ['-v', 'error', ...(t === null ? [] : ['-ss', String(t)]), '-i', f, '-frames:v', '1', '-f', 'image2pipe', '-c:v', 'png', '-'], { maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'ignore'] });
+    const tsv = execFileSync('tesseract', ['stdin', 'stdout', '--psm', '11', 'tsv'], { input: png, encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['pipe', 'pipe', 'ignore'] });
+    return Math.max(0, ...tsv.split('\n').slice(1).map((l) => l.split('\t')).filter((c) => c.length > 11 && +c[10] >= CONF && (c[11].match(/\p{L}/gu) || []).length >= 3).map((c) => +c[9]));
+  };
+  const read = new Map();
+  let ocr = true;
+  res.ink.forEach((r, j) => {
+    if (!ocr || !r.ink.length) return;
+    let big = 0;
+    for (const [s, t, sc] of r.ink) {
+      const f = path.join(proj, decodeURIComponent(s)), k = `${s} ${t}`;
+      if (!fs.existsSync(f)) continue;
+      if (!read.has(k)) {
+        try { read.set(k, words(f, t)); } catch (e) { if (e.code === 'ENOENT') { ocr = false; return; } read.set(k, 0); }
+      }
+      big = Math.max(big, (read.get(k) * sc) / H);
+    }
+    res.table[j] += big ? `, biggest word in its video or image ${(big * 100).toFixed(1)}%` : ', no words read in its video or image';
+    if (big && big < res.floor * INK && r.text < res.floor) res.notes.push(`shot ${r.i}: the biggest word read inside its video or image is ${(big * 100).toFixed(1)}% of the frame height, so its text is under the ${res.floor * 100}% floor for a phone; push in or crop closer, or set the words it needs read as live type`);
+  });
+  if (!ocr) res.notes.push('text inside videos and images was not read: install tesseract (run the setup script)');
   console.log(res.table.join('\n'));
   console.log(res.summary);
   if (res.notes.length) console.log(res.notes.map((n) => 'note: ' + n).join('\n'));
-  const all = [...errors.map((e) => 'page error: ' + e), ...lost.map((v) => 'video file missing: ' + v), ...res.out];
+  const all = [...errors.map((e) => 'page error: ' + e), ...lost.map((v) => 'video file missing: ' + v), ...beats, ...res.out];
   console.log(all.length ? all.join('\n') : `check ok: page, images, fonts, shot targets, ${res.full ? 'product time, ' : ''}text size, edges and sharpness`);
   await b.close();
   server.close();

@@ -10,7 +10,7 @@ ap.add_argument("--fps", type=int, default=60)
 a = ap.parse_args()
 tiles = [dict(zip(("file", "map", "label"), (t.split("|") + ["", ""])[:3])) for t in a.tile]
 for t in tiles:
-    t["label"] = t["label"].replace(":", " ").replace("'", "").replace("\\", "")
+    t["label"] = t["label"].replace(": ", " · ").replace(":", " ").replace("'", "").replace("\\", "")
     t["audio"] = bool(subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0", t["file"]],
                                      capture_output=True, text=True).stdout.strip())
 passes = [int(x) for x in a.passes.split(",")] if a.passes else [len(tiles) - 1]
