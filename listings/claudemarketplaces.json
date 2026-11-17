@@ -1,0 +1,16 @@
+{
+  "name": "Ava Studio",
+  "type": "mcp",
+  "repository": "https://github.com/hologramxyz/avastudio-mcp",
+  "server_url": "https://mcp.avastudio.com/mcp",
+  "registry_name": "com.avastudio/ava",
+  "category": "Sales & Marketing",
+  "documentation": "https://docs.avastudio.com/api-and-mcp/connect",
+  "authentication": "Sign in with Ava (OAuth) or an Ava API key.",
+  "description": "Remote MCP server for Ava Studio. Research short-form video references, plan campaigns, draft concepts, and generate, edit and export video ads and carousels from Claude or ChatGPT. Sign in with Ava or use an API key. Paid actions use your Ava credits.",
+  "review": "free",
+  "human_submission_required": true,
+  "submission_rules": "https://claudemarketplaces.com/llms.txt",
+  "submit_url": "https://claudemarketplaces.com/submit?repo=https%3A%2F%2Fgithub.com%2Fhologramxyz%2Favastudio-mcp&type=mcp",
+  "optional_marketplace_submit_url": "https://claudemarketplaces.com/submit?repo=https%3A%2F%2Fgithub.com%2Fhologramxyz%2Favastudio-mcp&type=marketplace"
+}

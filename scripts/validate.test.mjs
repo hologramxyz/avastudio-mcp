@@ -60,6 +60,26 @@ test('the complete tool snapshot has explicit safety labels and matches its prov
   }
 });
 
+test('directory copy has matching connection details and human-only free submission links', () => {
+  const listing = json('listings/claudemarketplaces.json');
+  const repository = json('.claude-plugin/plugin.json').repository;
+  assert.equal(listing.name, json('server.json').title);
+  assert.equal(listing.repository, repository);
+  assert.equal(listing.server_url, endpoint);
+  assert.equal(listing.registry_name, json('server.json').name);
+  assert.equal(listing.category, 'Sales & Marketing');
+  assert.equal(listing.type, 'mcp');
+  assert.equal(listing.review, 'free');
+  assert.equal(listing.human_submission_required, true);
+  for (const [field, type] of [['submit_url', 'mcp'], ['optional_marketplace_submit_url', 'marketplace']]) {
+    const url = new URL(listing[field]);
+    assert.equal(url.origin, 'https://claudemarketplaces.com');
+    assert.equal(url.pathname, '/submit');
+    assert.equal(url.searchParams.get('repo'), repository);
+    assert.equal(url.searchParams.get('type'), type);
+  }
+});
+
 test('public files exclude credentials, server implementation and unrelated packages', () => {
   const forbidden = /ava_(?:live|at|rt|cs)_[A-Za-z0-9]{12,}|-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----/;
   const walk = path => {
