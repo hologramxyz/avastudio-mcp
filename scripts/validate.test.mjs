@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 
 const json = path => JSON.parse(readFileSync(path, 'utf8'));
@@ -38,15 +39,44 @@ test('submission includes usable public URLs, icons, and exactly five positive a
   assert(extension.publication.release_notes.length > 0);
 });
 
-test('76 distinct tools have explicit safety labels and read-only tools cannot be destructive', () => {
+test('the complete tool snapshot has explicit safety labels and matches its provenance', () => {
   const tools = json('listings/tool-annotations.json');
-  assert.equal(tools.length, 76);
-  assert.equal(new Set(tools.map(t => t.name)).size, 76);
-  assert(tools.some(tool => tool.name === 'project_history'));
+  const snapshot = json('listings/tool-snapshot.json');
+  assert.equal(snapshot.tool_count, 83);
+  assert.equal(snapshot.spec_version, '0.9.2');
+  assert.match(snapshot.build_revision, /^[a-f0-9]{40}$/);
+  assert.equal(snapshot.endpoint, endpoint);
+  assert.equal(tools.length, snapshot.tool_count);
+  assert.equal(new Set(tools.map(t => t.name)).size, snapshot.tool_count);
+  assert.equal(createHash('sha256').update(readFileSync('listings/tool-annotations.json')).digest('hex'), snapshot.sha256);
+  for (const name of [
+    'project_history', 'campaign_evidence', 'concept_draft_get', 'concept_draft_update',
+    'launch_style_get', 'launch_style_list', 'plan_list', 'slides_update',
+  ]) assert(tools.some(tool => tool.name === name), `Missing current tool: ${name}`);
   for (const tool of tools) {
     assert(tool.title.length > 3);
     for (const key of ['readOnlyHint', 'destructiveHint', 'openWorldHint']) assert.equal(typeof tool.annotations[key], 'boolean');
     if (tool.annotations.readOnlyHint) assert.equal(tool.annotations.destructiveHint, false);
+  }
+});
+
+test('directory copy has matching connection details and human-only free submission links', () => {
+  const listing = json('listings/claudemarketplaces.json');
+  const repository = json('.claude-plugin/plugin.json').repository;
+  assert.equal(listing.name, json('server.json').title);
+  assert.equal(listing.repository, repository);
+  assert.equal(listing.server_url, endpoint);
+  assert.equal(listing.registry_name, json('server.json').name);
+  assert.equal(listing.category, 'Sales & Marketing');
+  assert.equal(listing.type, 'mcp');
+  assert.equal(listing.review, 'free');
+  assert.equal(listing.human_submission_required, true);
+  for (const [field, type] of [['submit_url', 'mcp'], ['optional_marketplace_submit_url', 'marketplace']]) {
+    const url = new URL(listing[field]);
+    assert.equal(url.origin, 'https://claudemarketplaces.com');
+    assert.equal(url.pathname, '/submit');
+    assert.equal(url.searchParams.get('repo'), repository);
+    assert.equal(url.searchParams.get('type'), type);
   }
 });
 
