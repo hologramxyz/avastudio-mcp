@@ -5,6 +5,9 @@ The hosted service runs at https://mcp.avastudio.com/mcp.
 
 Documentation: https://docs.avastudio.com/api-and-mcp/connect
 
+[Privacy policy](https://app.avastudio.com/privacy-policy) ·
+[Terms of service](https://app.avastudio.com/terms-of-service)
+
 Connect Claude, ChatGPT or Cursor with the server URL and **Sign in with Ava**.
 Choose permissions and an optional monthly credit budget during consent.
 Only the permitted tools are visible. Existing account credits pay for work;
@@ -35,12 +38,40 @@ private specification package, reviewer credentials or publisher keys.
 - `server.json`: official MCP Registry entry for `com.avastudio/ava`.
 - `plugin.json`, `mcp.json`, `skills/`, `assets/`: portable OpenAI plugin.
 - `.claude-plugin/` and `.mcp.json`: Claude Code plugin compatibility.
-- `listings/`: Claude/Smithery form copy and all 76 tool annotations.
+- `listings/`: directory form copy and all 83 tool annotations.
 
 The tool titles, descriptions and safety labels are a submission snapshot of
-API contract 0.8.3 (2026-10-29), including native carousel image projects.
-Refresh this snapshot from the hosted service before a directory submission
-if its tool catalog has changed.
+API contract 0.9.2 (2026-11-17), including campaign draft and carousel editing,
+campaign evidence, week navigation and launch styles. The API contract version
+is separate from the plugin package version. `listings/tool-snapshot.json`
+records the deployed build revision, tool count and snapshot checksum.
+Refresh this snapshot against the deployed API specification before a directory
+submission if the tool catalog has changed. Check the version and total against
+`https://mcp.avastudio.com/health`; an authenticated tool list can be smaller
+because it only includes tools permitted by that connection's scopes.
+
+## Claude Marketplaces submission
+
+Claude Marketplaces is an independent directory, separate from Anthropic's
+official connector directory. Its [submission rules](https://claudemarketplaces.com/llms.txt)
+require a person to sign in with GitHub and send the form; agents should not
+submit or pay on their behalf.
+
+1. Check the [existing MCP listing](https://claudemarketplaces.com/mcp/hologramxyz/avastudio-mcp)
+   and [directory search](https://claudemarketplaces.com/search?q=avastudio).
+   After signing in, also check for a pending submission. Do not submit duplicates.
+2. Open the [prefilled MCP submission](https://claudemarketplaces.com/submit?repo=https%3A%2F%2Fgithub.com%2Fhologramxyz%2Favastudio-mcp&type=mcp)
+   and choose free review. `listings/claudemarketplaces.json` contains copy to
+   paste if the form asks for a name, description, category or server details;
+   it is not an automated submission payload. Use **Sales & Marketing** and
+   the registry name `com.avastudio/ava`.
+3. Optionally request a distinct [Claude Code marketplace listing](https://claudemarketplaces.com/submit?repo=https%3A%2F%2Fgithub.com%2Fhologramxyz%2Favastudio-mcp&type=marketplace)
+   if the form accepts both types for this repo. Its manifest is
+   `.claude-plugin/marketplace.json`. Do not repeat a listing already pending.
+4. When approved, check the public page's connection instructions and description.
+   Directory acceptance does not guarantee search indexing or AI citations.
+
+## OpenAI plugin package
 
 Validate and build the OpenAI upload ZIP with Node.js 22+, Python 3 and `zip`:
 
