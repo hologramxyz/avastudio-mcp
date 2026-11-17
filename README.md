@@ -1,5 +1,9 @@
 # Ava Studio
 
+Research short-form video references, plan campaigns, and generate, edit and
+export video ads and carousels from Claude or ChatGPT through Ava Studio's
+remote MCP server.
+
 Public connection, plugin and MCP directory listing files for Ava Studio.
 The hosted service runs at https://mcp.avastudio.com/mcp.
 
