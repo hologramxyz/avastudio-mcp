@@ -2,9 +2,9 @@
   {
     "name": "whoami",
     "title": "View Ava account",
-    "description": "Check the API key and see the account: user id, credit balance and brands. Call this first in a session; if brands is empty, call brand_create next.",
+    "description": "Check the API key and see the account: user id, credit balance, brands and starter-credit status. May claim an eligible account’s one-time starter grant when that rollout is enabled. Call this first in a session; if brands is empty, call brand_create next.",
     "annotations": {
-      "readOnlyHint": true,
+      "readOnlyHint": false,
       "destructiveHint": false,
       "openWorldHint": false
     }
@@ -21,8 +21,8 @@
   },
   {
     "name": "brand_create",
-    "title": "Create brand from website",
-    "description": "Research a brand from its website, save a full brand profile (products, audience, tone, claims, customer insights) and analyze up to 12 of the images and videos it found so productions can use them. Costs 40 credits. Takes a minute or two: returns a job_id; poll jobs_get until succeeded, then the result is the Brand, whose media_readiness says what media is still missing.",
+    "title": "Create and save brand",
+    "description": "Create and save a brand: pass profile with a name and supplied details for a free save without research (website optional inside profile), or url with optional hints for website research and media analysis (40 credits, eligible first-brand allowance applies). Returns a job_id; poll jobs_get until succeeded, then confirm the saved brand_id and name. Talking about a brand or exporting it does not save changes; use brand_update for later edits.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -322,7 +322,7 @@
   {
     "name": "campaign_list",
     "title": "List campaigns",
-    "description": "List the account's Ava Studio campaigns, newest first, optionally for one brand: name, type, automation and whether setup is complete. Use campaign_get for a campaign's settings and latest plan run, or campaign_create to start one.",
+    "description": "List the account's campaigns newest first, optionally for one brand, with type, automation and setup status; results are options, not a user selection. For an ambiguous request, read a candidate with campaign_get and ask once whether to continue it or start a new campaign. Explicit new requests use campaign_create; continuation, follow-ups and retries keep the chosen campaign without asking again.",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
@@ -332,7 +332,7 @@
   {
     "name": "campaign_get",
     "title": "Read campaign",
-    "description": "Read one campaign: brief, objective, type, automation settings, featured brand media and a summary of its latest plan run. Call plan_run to research and draft concepts, or concept_list to see the ones already drafted.",
+    "description": "Read a campaign's brief, objective, type, settings, featured media and latest plan run. Reading a candidate does not select it; for an ambiguous request recommend it with its saved goal and ask once whether to continue it or start a new one. For a campaign the user chose, continue without asking again: plan_run drafts concepts and concept_list reads existing ones.",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
@@ -342,7 +342,7 @@
   {
     "name": "campaign_create",
     "title": "Create campaign",
-    "description": "Create an organic or paid campaign with the actual app/product brief and objectives; first use campaign_list/get to reuse the user's selected campaign. Creation does not plan or generate: use plan_get/plan_run, concept_list, approval and creative_produce on this same campaign_id, not draft_briefs' separate container. Automation starts off; returns the Campaign and studio_url for optional settings changes.",
+    "description": "Create a campaign after collecting missing type, goal, formats and volume; choose defaults only when delegated. Explicit new requests create even when the brand already has one; ambiguous requests ask once whether to continue it or start a new one. Save formats and posts_per_day or concepts_per_run, report returned settings/studio_url, then use plan_get/plan_run and creative_produce on the same campaign_id; creation starts no planning or production.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
@@ -352,7 +352,7 @@
   {
     "name": "campaign_update",
     "title": "Update campaign settings",
-    "description": "Change a campaign's name, brief, objective or featured brand media, pause automation, or save its schedule and time zone while paused; send only changed fields to get the updated Campaign. Enabling or rescheduling active automation is refused because scheduled work runs outside API prices and key budgets; use plan_run for each run. Manage automation, formats, cast and media budgets in Studio.",
+    "description": "Save name, brief, goal, featured media, formats or organic posts_per_day / paid concepts_per_run; existing concepts and research remain unchanged. Pause active automation before changing formats, volume, schedule or time zone; the API cannot enable scheduled work, preserving key budgets. Offer plan_run with refresh:true after spending approval to re-plan using current settings; selected formats stay selected until explicitly changed.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -362,7 +362,7 @@
   {
     "name": "plan_run",
     "title": "Run campaign planner",
-    "description": "Use for campaign planning: research the selected campaign and draft its concepts, then concept_list, approval and creative_produce on the same campaign_id. Costs 200 credits, only when it starts a run; check plan_get first, since an existing current-period run returns started:false without a charge. Takes minutes and produces no media; poll jobs_get, and never substitute standalone draft_briefs for this planner.",
+    "description": "Research and draft campaign concepts on the same campaign_id, then review with concept_list and produce only after approval. Costs 200 credits, only when it starts a run; check plan_get first, since existing runs are reused unless refresh:true is explicitly approved to archive the prior attempt and re-plan with current settings. Takes minutes and produces no media; poll jobs_get, and never claim a settings update or started:false refreshed existing concepts.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -370,9 +370,49 @@
     }
   },
   {
+    "name": "plan_list",
+    "title": "Browse campaign weeks and runs",
+    "description": "List saved campaign runs and their Monday-Sunday display weeks in the campaign timezone. Use week_start to browse a week and before/next_cursor for older runs; run ids remain exact dates, not week ids.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "campaign_evidence",
+    "title": "Read campaign sources and proof",
+    "description": "Read a saved campaign run's references, linked concepts and public counters; these measure reference posts, never results of generated creatives. Choose source_id for concepts_draft_more, and use plan_list for older weeks. No credits are charged and no new research is performed.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "concept_draft_get",
+    "title": "Read editable concept and version history",
+    "description": "Read a campaign concept's editable draft, scripts and submitted versions with project ids; before_version pages older history. May initialize Studio's draft bookkeeping without starting production. For changes call concept_draft_update action:start_editing, then save with the returned draft_id/revision; submitted versions remain immutable.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "concept_draft_update",
+    "title": "Edit campaign concept draft",
+    "description": "Edit campaign scripts, their order, carousel copy or storyboard direction using Studio's version workflow; saving generates no media and costs no credits. Read concept_draft_get, call action:start_editing, then action:save with returned draft_id/revision and patch, then action:submit to queue a version for separate approved production. Existing projects stay intact; slides_update/timeline_update edit existing on-screen text and layout.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
     "name": "plan_get",
     "title": "Read campaign plan",
-    "description": "Read a campaign's plan run (the latest unless period_start is given): status, step labels, concept counts and ids, and Ava's research summary and strategy. Use it to follow a run started in Studio or by the schedule; when status is ready, call concept_list.",
+    "description": "Read a campaign's exact plan run (latest unless period_start is given): status, steps, concepts and research strategy. Use plan_list to discover run ids and Studio display weeks; a week's Monday is not necessarily a run id. When ready, call concept_list to review concepts.",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
@@ -412,7 +452,7 @@
   {
     "name": "concepts_draft_more",
     "title": "Draft more campaign concepts",
-    "description": "Draft 1-5 more concepts into the campaign's current plan run, reusing its research; call plan_run first if this period has no run yet. Costs 10 credits per concept drafted; it never produces media, so on a campaign whose mode is produce it fails with invalid_input. Returns a job_id; poll jobs_get, the result lists the new concepts.",
+    "description": "Draft 1-5 more concepts with the current campaign goal, reusing the existing run's research or the chosen source_id; use plan_run with refresh:true for fresh research and recommendations after a goal change. Costs 10 credits per concept drafted; it never produces media, so on a campaign whose mode is produce it fails with invalid_input. Returns a job_id; poll jobs_get, the result lists only the new concepts.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,
@@ -432,7 +472,7 @@
   {
     "name": "creative_get",
     "title": "Read creative",
-    "description": "Read one creative (an approved or produced concept): production status, output URLs, the post package (caption, hashtags, publish status) and its Studio project. To change it, edit the project with project_edit and get a new file with export_render.",
+    "description": "Read one creative (an approved or produced concept): production status, output URLs, the post package (caption, hashtags, publish status) and its Studio project. For existing text/layout read project_get, then use slides_update for image outputs or timeline_update for video; concept_draft_get starts the workflow for a new scripted version, and export_render makes the updated file.",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
@@ -442,7 +482,7 @@
   {
     "name": "creative_list",
     "title": "List campaign creatives",
-    "description": "List a campaign's creatives (approved and produced concepts), newest first, optionally for one plan run: status, output URLs and project ids. Call creative_get for one creative's post package, or creative_produce on approved concepts not produced yet.",
+    "description": "List a campaign's creatives (approved and produced concepts), newest first, optionally for one plan run or Studio week: status, output URLs and project ids. Call creative_get for one creative's post package, or creative_produce on approved concepts not produced yet.",
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
@@ -640,6 +680,26 @@
     }
   },
   {
+    "name": "launch_style_list",
+    "title": "List launch video styles",
+    "description": "List launch videos that went viral on X, labeled by industry, sector, audience and launch type and for remixing with a brand kit (format, remix path), with views, length and the original post. Use it for a launch, feature or fundraise video in a proven style. If the user named no reference, pick one and show it before building (poster_url, credit, post_url, why it fits), then read it with launch_style_get.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "launch_style_get",
+    "title": "Read launch video style",
+    "description": "Read a launch style's original X video, approximate beats, visual style, people and brand slots. Read brand_get, then rebuild motion graphics with your own agent or use project_create at the reference's aspect ratio and project_ask with post_url for a presenter clone; ask the user which supported ratio to use if Studio needs different framing. Show the original (poster_url, credit, post_url) next to the remix for comparison.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
     "name": "project_from_template",
     "title": "Create project from template",
     "description": "Make a project from a Studio template with your variables: only what depends on them changes (a scene generated from a variable you change is generated again, media variables swap in your file, text variables fill in); the rest stays as in the template (template_get: each scene's depends_on, and what is fixed). Costs Studio's price for the template: its 10-credit base fee plus each scene it generates at its model's price; template_get quotes it. Returns a job_id; poll jobs_get.",
@@ -663,6 +723,16 @@
     "name": "scene_select_variant",
     "title": "Select scene variant",
     "description": "Put one of a scene's generated variants on the timeline, as picking it in Studio does; returns the scene with its media. The generation and variant ids come from scene_generate's result.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "slides_update",
+    "title": "Edit carousel slides",
+    "description": "Edit a carousel or static-image project's on-slide text, text styles, positions or slide order without generating images. Read project_get first: items use element ids, slide_order is the complete scene_id order, and expected_revision prevents stale saves. Call export_render for updated images/ZIP; baked-in text needs a separately approved targeted image edit.",
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true,

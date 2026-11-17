@@ -1,0 +1,9 @@
+{
+  "spec_version": "0.9.2",
+  "build_revision": "3068a83174dba545f1e3e0e6b38471c79efd483b",
+  "captured_on": "2026-11-17",
+  "tool_count": 83,
+  "sha256": "5b28cf1f432628fca61bd65dfe71ff7a8f255978a977eec05eaa927363ffaef0",
+  "endpoint": "https://mcp.avastudio.com/mcp",
+  "source": "Tool metadata from the API specification at the deployed build revision; count and version checked against production /health. No tool handlers invoked."
+}
